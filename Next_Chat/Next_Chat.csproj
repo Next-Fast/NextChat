@@ -6,22 +6,25 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <PlatformTarget>x86</PlatformTarget>
+        <Platform>x86;</Platform>
+        <OutDir>../Output</OutDir>
+        <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.9.4" />
-      <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" />
-      <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" />
-      <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.700" />
-      <PackageReference Include="NAudio" Version="2.2.1" />
-      <PackageReference Include="OpusDotNet.opus.win-x86" Version="1.3.1" />
-      <PackageReference Include="WebRtcVadSharp" Version="1.3.2" />
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.9.4" />
+        <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" />
+        <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" />
+        <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.700" />
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" Aliases="JetBrains" />
+        <PackageReference Include="NAudio" Version="2.2.1" />
+        <PackageReference Include="OpusDotNet" Version="1.0.3" />
+        <PackageReference Include="OpusDotNet.opus.win-x86" Version="1.3.1" />
+        <PackageReference Include="WebRtcVadSharp" Version="1.3.2" />
     </ItemGroup>
     
     <ItemGroup>
         <EmbeddedResource Include="Resource/**" />
-        <AdditionalFiles Include="Resource/Sprites/*.png" />
         <ProjectReference Include="..\ResourceSourceGenerator\ResourceSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

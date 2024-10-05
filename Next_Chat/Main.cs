@@ -1,13 +1,16 @@
-﻿using BepInEx;
+﻿using System.Diagnostics;
+using System.Reflection;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
-using NAudio.Wave;
+using Next_Chat.Core;
 
 namespace Next_Chat;
 
 [BepInAutoPlugin("Next.Voice", "Next.Voice", "1.0.0")]
+[UsedImplicitly]
 public sealed partial class Main : BasePlugin
 {
     public static readonly Harmony _Harmony = new(Id);
@@ -22,12 +25,23 @@ public sealed partial class Main : BasePlugin
     
     public override void Load()
     {
-        var @event = new WaveInEvent();
-        @event.StartRecording();
-        @event.DataAvailable += (sender, args) =>
-        {
-            
-        };
+        AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+        Process.GetCurrentProcess().Exited += (sender, args) => Unload();
+        
+        
         _Harmony.PatchAll();
+    }
+    
+
+    public override bool Unload()
+    {
+        AppDomain.CurrentDomain.AssemblyResolve -= AssemblyResolve;
+        return base.Unload();
+    }
+
+    private static Assembly? AssemblyResolve(object? sender, ResolveEventArgs args)
+    {
+        var name = new AssemblyName(args.Name);
+        return Libs.ResourceLibs.TryGet(n => n.Name == name.Name, out var lib) ? lib.Load() : null;
     }
 }

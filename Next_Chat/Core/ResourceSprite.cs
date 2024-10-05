@@ -22,11 +22,8 @@ public class ResourceSprite(
     public float _pixel = pixel;
     private Sprite? _sprite;
 
-    public Sprite? ReturnSprite = null;
 
     public string Path => GetPath();
-
-    public object? Instance { get; set; }
 
     public static implicit operator Sprite(ResourceSprite rs)
     {
@@ -35,9 +32,7 @@ public class ResourceSprite(
 
     public Sprite GetSprite()
     {
-        if (ReturnSprite != null)
-            return ReturnSprite;
-
+        
         if (_sprite != null && _sprite.pixelsPerUnit == _pixel)
             return _sprite;
 
@@ -47,7 +42,8 @@ public class ResourceSprite(
 
     private string GetPath()
     {
-        if (assembly.GetManifestResourceNames().Contains(ResourcePath + _pathName)) return ResourcePath + _pathName;
+        if (assembly.GetManifestResourceNames().Contains(ResourcePath + _pathName)) 
+            return ResourcePath + _pathName;
 
         return _pathName;
     }
@@ -55,6 +51,5 @@ public class ResourceSprite(
     internal void Destroy()
     {
         _sprite?.Destroy();
-        ReturnSprite?.Destroy();
     }
 }

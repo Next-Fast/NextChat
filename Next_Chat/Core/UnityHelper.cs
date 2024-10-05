@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -140,4 +141,12 @@ public static class UnityHelper
             )
             .Cast<IRegionInfo>();
     }
+
+    public static bool TryGet<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate, [MaybeNullWhen(false)] out T item) where T : class
+    {
+        item = null;
+        var get = enumerable.ToList().FirstOrDefault(predicate);
+        return get != null;
+    }
+    
 }

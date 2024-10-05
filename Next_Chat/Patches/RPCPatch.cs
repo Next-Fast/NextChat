@@ -7,6 +7,7 @@ using Next_Chat.Core;
 
 namespace Next_Chat.Patches;
 
+[Harmony]
 public static class RPCPatch
 {
     public static readonly byte[] RpcIds = Enum.GetValues<RPCFlag>().Select(n => (byte)n).ToArray();
