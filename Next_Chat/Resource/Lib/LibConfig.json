@@ -1,0 +1,6 @@
+{
+  "opus.dll" : true,
+  "WebRtcVad.dll": true,
+  "WebRtcVadSharp.dll": true,
+  "NAudio.WinMM.dll": true
+}

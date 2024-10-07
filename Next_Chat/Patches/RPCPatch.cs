@@ -11,7 +11,8 @@ namespace Next_Chat.Patches;
 public static class RPCPatch
 {
     public static readonly byte[] RpcIds = Enum.GetValues<RPCFlag>().Select(n => (byte)n).ToArray();
-    
+    public static Dictionary<RPCFlag, Action<MessageReader>> rpcHandlers = new();
+        
     [HarmonyPatch(typeof(InnerNetClient._HandleGameDataInner_d__41), nameof(InnerNetClient._HandleGameDataInner_d__41.MoveNext))]
     public static bool Prefix(InnerNetClient._HandleGameDataInner_d__41 __instance, ref bool __result)
     {
@@ -24,6 +25,9 @@ public static class RPCPatch
             reader.Recycle();
             return true;
         }
+
+        if (rpcHandlers.TryGetValue((RPCFlag)rpc, out var action))
+            action.Invoke(reader);
         
         reader.Recycle();
         __result = false;

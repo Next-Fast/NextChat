@@ -8,10 +8,10 @@ public class ChatChannelManager : InstanceClass<ChatChannelManager>
 {
     public static readonly List<ChatChannel> DefaultChannels =
     [
-        new(Sprites.all, n => MeetingHud.Instance),
-        new(Sprites.impostor, n => n.Data.Role.IsImpostor),
-        new(Sprites.jackal),
-        new(Sprites.lover)
+        new(Sprites.All, n => MeetingHud.Instance),
+        new(Sprites.Impostor, n => n.Data.Role.IsImpostor),
+        new(Sprites.Jackal),
+        new(Sprites.Lover)
     ];
 
     private List<ChatChannel> _Channels = [..DefaultChannels];

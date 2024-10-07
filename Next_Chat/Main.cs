@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -16,6 +17,8 @@ public sealed partial class Main : BasePlugin
     public static readonly Harmony _Harmony = new(Id);
     public static ManualLogSource LogSource { get; private set; } = null!;
     public static ConfigFile ConfigFile { get; private set; } = null!;
+    
+    public static IOptionCreator? _OptionCreator { get; set; }
 
     public Main()
     {
@@ -25,8 +28,12 @@ public sealed partial class Main : BasePlugin
     
     public override void Load()
     {
+        System.Console.OutputEncoding = Encoding.UTF8;
         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
         Process.GetCurrentProcess().Exited += (sender, args) => Unload();
+
+        foreach (var lib in Libs.ResourceLibs)
+            lib.Write();
         
         
         _Harmony.PatchAll();

@@ -9,11 +9,10 @@ public class ResourceSprite(
     bool cache = true
     )
 {
-
-
+    
     private static readonly Assembly assembly = Assembly.GetExecutingAssembly();
     
-    private static readonly string ResourcePath = $"{assembly.GetName().Name}.Resources.";
+    private static readonly string ResourcePath = $"{ResourceInfo.AssemblyName}.Resource.";
 
     public readonly bool _cache = cache;
 
@@ -36,6 +35,7 @@ public class ResourceSprite(
         if (_sprite != null && _sprite.pixelsPerUnit == _pixel)
             return _sprite;
 
+        LogInfo($"Load Path Form Resources: {GetPath()} : {ResourcePath + _pathName}");
         _sprite = UnityHelper.loadSpriteFromResources(GetPath(), _pixel, _cache);
         return _sprite!;
     }

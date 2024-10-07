@@ -3,6 +3,7 @@ using AmongUs.QuickChat;
 using HarmonyLib;
 using Hazel;
 using Next_Chat.Core;
+using Next_Chat.Default;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -17,6 +18,7 @@ internal static class ChatChannelPatch
     public static PassiveButton? ChatChannelPassiveButton { get; internal set; }
     
     public static SpriteRenderer? ChatChannelButtonSpriteRenderer { get; internal set; }
+    
     
     internal static void UpdateChannelButton()
     {
@@ -34,7 +36,7 @@ internal static class ChatChannelPatch
         if (ChatChannelButton) return;
         var banMenuButton = __instance.banButton.transform.parent.Find("BanMenuButton").gameObject;
         ChatChannelButton = Object.Instantiate(banMenuButton, banMenuButton.transform.parent, true);
-        ChatChannelButton.name = "ChatChannelButton";
+        ChatChannelButton.name = nameof(ChatChannelButton);
         ChatChannelButton.transform.localPosition += new Vector3(0, 0.7f, 0);
         ChatChannelPassiveButton = ChatChannelButton.GetComponent<PassiveButton>();
         ChatChannelButton.transform.GetChild(1).gameObject.Destroy();
@@ -48,6 +50,7 @@ internal static class ChatChannelPatch
             UpdateChannelButton();
         });
         UpdateChannelButton();
+
     }
     
     

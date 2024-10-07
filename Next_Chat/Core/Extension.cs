@@ -1,6 +1,6 @@
 namespace Next_Chat.Core;
 
-public class NextSoundAudio
+public static class Extension
 {
     
 }

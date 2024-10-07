@@ -26,6 +26,7 @@ public class ResourceGenerator : IIncrementalGenerator
     }
 
     public Dictionary<string, string> Configs = new();
+    public List<string> Sprites = [];
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var optionsProvider = context.AnalyzerConfigOptionsProvider
@@ -75,17 +76,10 @@ public class ResourceGenerator : IIncrementalGenerator
             var spriteFields = new List<CSharpType.IMember>();
             foreach (var file in sprites)
             {
-                var name = file.RelativePath.GetFileName(true);
-                var filedName = name.Replace(".png", "");
+                var filedName = file.RelativePath.GetFileName(false);
                 string? pixel = null;
-                if (spriteConfig != null && spriteConfig.TryGetValue(name, out var pixelValue))
+                if (spriteConfig != null && spriteConfig.TryGetValue(file.RelativePath.GetFileName(true), out var pixelValue))
                     pixel = $"{pixelValue}f";
-                if (name.Contains('_'))
-                {
-                    var split = name.Split('_');
-                    filedName = split[0];
-                    pixel = split[1];
-                }
 
                 var spritePath = file.RelativePath.GetResourcePath();
                 var value = "new (";
@@ -102,6 +96,7 @@ public class ResourceGenerator : IIncrementalGenerator
                     IsReadonly = true,
                     DefaultValue = value
                 });
+                Sprites.Add($"{filedName}_{pixel ?? "115f"}");
             }
             
             var sourceClass = new CSharpClass(Visibility.Public, "Sprites")
@@ -125,11 +120,19 @@ public class ResourceGenerator : IIncrementalGenerator
         var libProvider = fileProvider.Where(n => n.RelativePath.StartsWith("Lib") && n.RelativePath.EndsWith(".dll")).Collect();
         context.RegisterSourceOutput(libProvider, (productionContext, libs) =>
         {
-            var libsValue = "";
+            Dictionary<string, bool>? libConfig = null;
+            if (Configs.TryGetValue("LibConfig.json", out var configText))
+                libConfig = JsonSerializer.Deserialize<Dictionary<string, bool>>(configText);
             
+            var libsValue = "";
             foreach (var file in libs)
             {
-                libsValue += $"new (\"{file.RelativePath.GetResourcePath()}\")";
+                var write = false;
+                if (libConfig != null && libConfig.TryGetValue(file.RelativePath.GetFileName(true), out var _write))
+                    write = _write;
+
+                var writeValue = write ? ", true" : ""; 
+                libsValue += $"new (\"{file.RelativePath.GetResourcePath()}\"{writeValue})";
                 if (libs.Last() != file)
                     libsValue += ",";
                 libsValue += "\n";
@@ -160,11 +163,11 @@ public class ResourceGenerator : IIncrementalGenerator
             productionContext.AddSource("Libs", spriteSourceText);
         });
         
-        
-        context.RegisterSourceOutput(context.CompilationProvider, (productionContext, compilation) =>
+        context.RegisterSourceOutput(context.CompilationProvider,(Context, Compilation)=>
         {
             var configs = string.Join(",", Configs.Keys);
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var sprites = string.Join(",", Sprites);
             var infoSourceText = new CSharpFile("NextResources")
             {
                 new CSharpClass("ResourceInfo")
@@ -180,10 +183,22 @@ public class ResourceGenerator : IIncrementalGenerator
                         IsStatic = true,
                         IsReadonly = true,
                         DefaultValue = $"\"{configs}\""
+                    },
+                    new CSharpField(Visibility.Public, "string", "Sprites")
+                    {
+                        IsStatic = true,
+                        IsReadonly = true,
+                        DefaultValue = $"\"{sprites}\""
+                    },
+                    new CSharpField(Visibility.Public, "string", "AssemblyName")
+                    {
+                        IsStatic = true,
+                        IsReadonly = true,
+                        DefaultValue = $"\"{Compilation.AssemblyName}\""
                     }
-                },
+                }
             }.ToString();
-            productionContext.AddSource("ResourceInfo", infoSourceText);
+            Context.AddSource("ResourceInfo", infoSourceText);
         } );
     }
 }
@@ -209,13 +224,15 @@ public static class Extension
 
     public static string GetResourcePath(this string path) => path.Replace("/", ".");
 
-    public static string GetFileName(this string name, bool hasExtension)
+    public static string GetFileName(this string path, bool hasExtension)
     {
-        var paths = name.Split('/').ToList();
+        var paths = path.Split('/').ToList();
         var fileName = paths.Last();
         if (!hasExtension)
-            fileName = fileName.Replace("." + fileName.Split('.').Last(), "");
-
+        {
+            fileName = fileName[..fileName.LastIndexOf('.')];    
+        }
+        
         return fileName;
     }
 }
