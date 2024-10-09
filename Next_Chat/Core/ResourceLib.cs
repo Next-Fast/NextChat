@@ -3,18 +3,17 @@ using BepInEx;
 
 namespace Next_Chat.Core;
 
-public class ResourceLib(string name, bool WriteDir = false)
+public class ResourceLib(string name)
 {
     private static readonly Assembly assembly = Assembly.GetExecutingAssembly();
     private static readonly string ResourcePath = $"{ResourceInfo.AssemblyName}.Resource.";
     public readonly string Name = GetName(name);
-    public readonly bool WriteDir = WriteDir;
 
     public static string GetName(string path)
     {
-        var paths = path.Split('.').ToList();
-        paths.RemoveAt(0);
-        return string.Join('.', paths);
+        path = path[(path.IndexOf('.') + 1)..];
+        path = path[..path.LastIndexOf('.')];
+        return path;
     }
     public string GetPath()
     {
@@ -24,26 +23,13 @@ public class ResourceLib(string name, bool WriteDir = false)
         return name;
     }
 
-    public void Write()
+    public void Write(string dir)
     {
-        if (!WriteDir) return;
         LogInfo($"Write Path Form Resources: {GetPath()} : {ResourcePath + name}");
-        var path = Path.Combine(Paths.PluginPath, Name);
+        var path = Path.Combine(dir, Name + ".dll" );
         if (File.Exists(path) && new FileInfo(path).Length != 0) return;
         using var _Stream = assembly.GetManifestResourceStream(GetPath());
-        using var file = File.OpenWrite(path);
-        _Stream?.CopyTo(file);
+        File.WriteAllBytes(path, _Stream.ReadFully());
     }
-
-    public Assembly? Load()
-    {
-        LogInfo($"Load Path Form Resources: {GetPath()} : {ResourcePath + name}");
-        using var _Stream = assembly.GetManifestResourceStream(GetPath());
-        
-        if (_Stream != null) 
-            return Assembly.Load(_Stream.ReadFully());
-        
-        LogWarning("Resource not found: " + GetPath());
-        return null;
-    }
+    
 }

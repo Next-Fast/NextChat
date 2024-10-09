@@ -1,6 +1,9 @@
+using BepInEx.Unity.IL2CPP;
+using Il2CppInterop.Runtime.Injection;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Next_Chat.Default;
+using UnityEngine;
 
 namespace Next_Chat.Core;
 
@@ -25,28 +28,40 @@ public static class Extension
     public static DefaultPlayer CreateProvider(this DefaultPlayer player, VoiceConfig config)
     {
         player.BufferedProvider = config.BuildBufferedWaveProvider();
-        player.SampleProvider = player.BufferedProvider.GetConverter();
+        player._FloatProvider = config.Build16ToFloatProvider(player.BufferedProvider);
+        player.SampleProvider = player._FloatProvider.GetConverter();
         return player;
     }
 
     public static SampleProviderConverterBase GetConverter(this IWaveProvider provider)
     {
         var format = provider.WaveFormat;
-        if (format.Encoding != WaveFormatEncoding.Pcm) 
-            throw new Exception("provider No PCM");
-        switch (format.BitsPerSample)
+        if (format.Encoding == WaveFormatEncoding.Pcm)
         {
-            case 8:
-                return new Pcm8BitToSampleProvider(provider);
-            case 16:
-                return new Pcm16BitToSampleProvider(provider);
-            case 24:
-                return new Pcm24BitToSampleProvider(provider);
-            case 32:
-                return new Pcm32BitToSampleProvider(provider);
-            default:
-                throw new Exception("No if (provider is SampleProviderConverterBase converter)");
+            return format.BitsPerSample switch
+            {
+                8 => new Pcm8BitToSampleProvider(provider),
+                16 => new Pcm16BitToSampleProvider(provider),
+                24 => new Pcm24BitToSampleProvider(provider),
+                32 => new Pcm32BitToSampleProvider(provider),
+                _ => throw new Exception("No PCM bit SampleProviderConverterBase converter")
+            };
         }
+
+        if (format.Encoding != WaveFormatEncoding.IeeeFloat) 
+            throw new Exception("provider No PCM and IEEE Float");
+        
+        if (format.BitsPerSample == 64)
+            return new WaveToSampleProvider64(provider);
+            
+        return new WaveToSampleProvider(provider);
+
+    }
+
+    public static T AddComponent<T>(this BasePlugin plugin) where T : MonoBehaviour
+    {
+        ClassInjector.RegisterTypeInIl2Cpp<T>();
+        return plugin.AddComponent<T>().Dont();
     }
     
 }

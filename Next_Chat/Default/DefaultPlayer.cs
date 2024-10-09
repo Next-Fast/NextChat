@@ -9,29 +9,36 @@ public class DefaultPlayer(PlayerControl player) : INextPlayer
     public PlayerControl player { get; set; } = player;
     public PlayerStates state { get; set; } = PlayerStates.Play;
     
-    public bool IsSpeaking { get; set; } = false;
+    public bool IsSpeaking { get; set; }
 
     private readonly List<NextAudioData> AllKeepData = [];
     internal readonly List<NextAudioData> _allData = [];
     public int LastDataId { get; set; }
     public BufferedWaveProvider? BufferedProvider { get; set; }
+    public Wave16ToFloatProvider? _FloatProvider { get; set; }
     public SampleProviderConverterBase? SampleProvider { get; set; }
+    
+    public VoiceConfig? Config { get; set; }
     
 
     public virtual void OnUpdate()
     {
-        if (AllKeepData[0].dataId == LastDataId + 1)
+        if (AllKeepData.Count != 0 && AllKeepData[0].dataId == LastDataId + 1)
             PushData(AllKeepData[0]);
-
+        
+        if (_allData.Count == 0) return;
+        
         if (state.HasFlag(PlayerStates.Ban))
         {
             _allData[0].Dispose();
             _allData.RemoveAt(0);
+            IsSpeaking = false;
             return;
         }
-
+        
         var data = _allData[0];
         AddDataToProvider(data);
+        IsSpeaking = true;
     }
 
     public virtual void AddDataToProvider(NextAudioData data)

@@ -38,7 +38,6 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     public NextVoiceManager()
     {
         _Instance = this;
-        InputKeyBindUpdate.Register("VoiceMute", LocalPlayer.Instance.SetMicState, KeyCode.M);
         ChangeEndpoint(ConnectionMode.Rpc);
         SetSpeakerPlay();
         ChangeConfig(VoiceConfig.CreateDefault());
@@ -60,6 +59,8 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     public void ChangeConfig(VoiceConfig config)
     {
         _Config = config;
+        if (LocalPlayer.Instance != null)
+            LocalPlayer.Instance.Config = _Config;
         ReInitTool();
     }
 
@@ -69,7 +70,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         return new NextAudioData
         {
             DataBytes = data,
-            Player = LocalPlayer.Instance,
+            Player = LocalPlayer.Instance!,
             dataId = LastId,
             pcmLength = byteNumber
         };
@@ -102,7 +103,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     }
     
     public bool WaveOutState => _WaveTool?.WaveOut?.PlaybackState == PlaybackState.Playing;
-    public INextPlayer GetPlayer(byte id) => Players.First(n => n.player.PlayerId == id);
+    public DefaultPlayer GetPlayer(byte id) => (DefaultPlayer)Players.First(n => n.player.PlayerId == id);
 
     public void SetVolume(float volume)
     {
@@ -111,7 +112,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
             _WaveTool.WaveOut.Volume = volume;
     }
 
-    private bool waveInState = false;
+    private bool waveInState;
 
     public void SetSpeakerPlay()
     {
@@ -228,7 +229,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     public INextPlayer CreatePlayer(PlayerControl player)
     {
         Players.FirstOrDefault(n => n.player == player)?.Dispose();
-        var NewPlayer = player.AmOwner ? new LocalPlayer(player) : new DefaultPlayer(player);
+        var NewPlayer = player == PlayerControl.LocalPlayer ? new LocalPlayer(player) { Config = _Config } : new DefaultPlayer(player);
         
         if (MixingProvider != null && _Config != null)
             NewPlayer.AddProvider(_Config, MixingProvider);
@@ -241,11 +242,13 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     {
         if (Endpoint?.Mode == connectionMode)
             return;
+        
         Endpoint?.Stop();
         Endpoint = connectionMode switch
         {
             ConnectionMode.Rpc => new RPCNetworkEndpoint(),
-            _ => throw new Exception($"Not implemented connection mode{connectionMode}")
+            ConnectionMode.Server => new ServerNetworkEndpoint(),
+            _ => new RPCNetworkEndpoint()
         };
         
         Endpoint.Start();

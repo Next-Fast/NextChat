@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using BepInEx;
 using BepInEx.Configuration;
@@ -7,7 +8,9 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Next_Chat.Core;
+using Next_Chat.Default;
 using Next_Chat.Patches;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
@@ -35,6 +38,16 @@ public sealed partial class Main : BasePlugin
         System.Console.OutputEncoding = Encoding.UTF8;
         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
         Process.GetCurrentProcess().Exited += (sender, args) => Unload();
+        
+        SetModStamp();
+        SetWrite();
+        SetKeyBind();
+
+        _Harmony.PatchAll();
+    }
+
+    private void SetModStamp()
+    {
         if (!File.Exists(Path.Combine(Paths.PluginPath, "Reactor.dll"))) 
             SceneManager.add_sceneLoaded((UnityAction<Scene, LoadSceneMode>)(Action<Scene, LoadSceneMode>)((scene, mode) => 
             {
@@ -42,12 +55,40 @@ public sealed partial class Main : BasePlugin
                 if (!ModManager.Instance.ModStamp.gameObject.active)
                     ModManager.Instance.ShowModStamp();
             }));
+    }
+
+    private void SetKeyBind()
+    {
+        Extension.AddComponent<InputKeyBindUpdate>(this);
+        InputKeyBindUpdate.Register("VoiceMute", () =>
+        {
+            LocalPlayer.Instance?.SetMicState();
+        }, KeyCode.M);
+    }
+    
+    private static void SetWrite()
+    {
+        LibDir = Path.Combine(Paths.GameRootPath, "Library");
+        if (!Directory.Exists(LibDir))
+            Directory.CreateDirectory(LibDir);
 
         foreach (var lib in Libs.ResourceLibs)
-            lib.Write();
+        {
+            lib.Write(LibDir);
+        }
+        
+        NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), Resolver);
+        return;
 
-        AddComponent<InputKeyBindUpdate>().Dont();
-        _Harmony.PatchAll();
+        IntPtr Resolver(string library, Assembly assembly, DllImportSearchPath? search)
+        {
+            var path = Path.Combine(LibDir, $"{library}.dll");
+            LogInfo($"Resolver: {library} {assembly.GetName()} " + path);
+            if (File.Exists(path) && NativeLibrary.TryLoad(path, out var handle))
+                return handle;
+            
+            return IntPtr.Zero;
+        }
     }
     
 
@@ -57,9 +98,11 @@ public sealed partial class Main : BasePlugin
         return base.Unload();
     }
 
+    public static string LibDir = Paths.PluginPath;
     private static Assembly? AssemblyResolve(object? sender, ResolveEventArgs args)
     {
         var name = new AssemblyName(args.Name);
-        return Libs.ResourceLibs.TryGet(n => n.Name == name.Name, out var lib) ? lib.Load() : null;
+        var path = Path.Combine(LibDir, $"{name.Name}.dll");
+        return File.Exists(path) ? Assembly.LoadFile(path) : null;
     }
 }

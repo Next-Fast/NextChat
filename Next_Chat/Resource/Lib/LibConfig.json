@@ -2,5 +2,10 @@
   "opus.dll" : true,
   "WebRtcVad.dll": true,
   "WebRtcVadSharp.dll": true,
-  "NAudio.WinMM.dll": true
+  "NAudio.WinMM.dll": true,
+  "NAudio.Wasapi.dll": true,
+  "NAudio.Core.dll": true,
+  "NAudio.dll": true,
+  "NAudio.Midi.dll": true,
+  "OpusDotNet.dll": true
 }

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Next_Chat", "Next_Chat\Next
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceSourceGenerator", "ResourceSourceGenerator\ResourceSourceGenerator.csproj", "{6D1861A9-C0AA-410E-86DB-AB6AAFE8E330}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Next_Chat.Server", "Next_Chat.Server\Next_Chat.Server.csproj", "{6EDC7A80-E173-4D4F-935B-13A89B7D0772}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{6D1861A9-C0AA-410E-86DB-AB6AAFE8E330}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D1861A9-C0AA-410E-86DB-AB6AAFE8E330}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D1861A9-C0AA-410E-86DB-AB6AAFE8E330}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EDC7A80-E173-4D4F-935B-13A89B7D0772}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EDC7A80-E173-4D4F-935B-13A89B7D0772}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EDC7A80-E173-4D4F-935B-13A89B7D0772}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EDC7A80-E173-4D4F-935B-13A89B7D0772}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

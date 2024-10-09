@@ -1,4 +1,5 @@
 using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 
 namespace Next_Chat.Core;
@@ -6,6 +7,8 @@ namespace Next_Chat.Core;
 public class ResourceSprite(
     string pathName = "",
     float pixel = 115f,
+    int x = 0, 
+    int y = 0,
     bool cache = true
     )
 {
@@ -20,6 +23,7 @@ public class ResourceSprite(
 
     public float _pixel = pixel;
     private Sprite? _sprite;
+    public Sprite[] Sprites = [];
 
 
     public string Path => GetPath();
@@ -29,6 +33,16 @@ public class ResourceSprite(
         return rs.GetSprite();
     }
 
+    public Sprite GetSprite(int index)
+    {
+        if (x == 0 && y == 0) return GetSprite();
+        var texture2D = UnityHelper.loadTextureFromResources(GetPath())!;
+        if (!Sprites[index]) 
+            Sprites[index] = UnityHelper.loadSprite(texture2D, _pixel, GetRect(texture2D, index), false)!;
+        
+        return Sprites[index];
+    }
+
     public Sprite GetSprite()
     {
         
@@ -36,7 +50,8 @@ public class ResourceSprite(
             return _sprite;
 
         LogInfo($"Load Path Form Resources: {GetPath()} : {ResourcePath + _pathName}");
-        _sprite = UnityHelper.loadSpriteFromResources(GetPath(), _pixel, _cache);
+ 
+        _sprite = UnityHelper.loadSpriteFromResources(GetPath(), _pixel);
         return _sprite!;
     }
 
@@ -51,5 +66,16 @@ public class ResourceSprite(
     internal void Destroy()
     {
         _sprite?.Destroy();
+        Sprites.Do(UnityHelper.Destroy);
+    }
+
+    private Rect GetRect(Texture2D texture2D, int index)
+    {
+        var division = new Tuple<int, int>(x, y);
+        var size = new Tuple<int, int>(texture2D.width / division.Item1, texture2D.height / division.Item2);
+        Sprites = new Sprite[division.Item1 * division.Item2];
+        var _x = index % division.Item1;
+        var _y = index / division.Item1;
+        return new Rect(_x * size.Item1, (division.Item2 - _y - 1) * size.Item2, size.Item1, size.Item2);
     }
 }

@@ -8,6 +8,8 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Platform>x86;</Platform>
         <OutDir>../Output</OutDir>
+
+        <DebugType>embedded</DebugType>
         <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
     </PropertyGroup>
 
@@ -27,4 +29,9 @@
         <EmbeddedResource Include="Resource/**" />
         <ProjectReference Include="..\ResourceSourceGenerator\ResourceSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
+    
+    <Target Name="Copy" AfterTargets="AfterBuild" Condition="'$(AmongUsLatest)' != ''">
+        <Move SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(AmongUsLatest)/BepInEx/plugins/" />
+        <Message Text="Move $(SourceFiles) To $(DestinationFolder)"/>
+    </Target>
 </Project>

@@ -23,22 +23,38 @@ public class VoicePatch
     
     public static TextMeshPro? MicButtonText { get; internal set; }
     
-    /*[HarmonyPatch(typeof(HudManager), nameof(HudManager.ToggleUseAndPetButton)), HarmonyPostfix]
+    [HarmonyPatch(typeof(HudManager), nameof(HudManager.ToggleUseAndPetButton)), HarmonyPostfix]
     private static void VoiceButtonPatch(HudManager __instance)
     {
         if (MicButton) return;
-        var UseButton = GameObject.Find("UseButton").gameObject;
-        if (!UseButton) return;
-        UpdateSprite();
-        return;
-
-        void UpdateSprite()
+        var Button = __instance.KillButton;
+        if (!Button) return;
+        
+        MicButton = Object.Instantiate(Button.gameObject, Button.transform.parent);
+        MicButton.name = "MicButton";
+        MicButtonSpriteRenderer = MicButton.GetComponent<SpriteRenderer>();
+        MicButton.GetComponent<KillButton>().Destroy();
+        var text2 = MicButton.transform.GetChild(2);
+        MicButtonText = text2.GetComponent<TextMeshPro>();
+        MicButton.DestroyAllChildren<TextTranslatorTMP>();
+        MicPassiveButton = MicButton.GetComponent<PassiveButton>();     
+        MicPassiveButton.OnClick = new Button.ButtonClickedEvent();
+        MicPassiveButton.OnClick.AddListener(() =>
         {
-            if (MicButtonSpriteRenderer == null || MicButtonText == null) return;
-            MicButtonSpriteRenderer.sprite = LocalPlayer.MicEnabled ? Sprites.MicOn : Sprites.MicOff;
-            MicButtonText.text = LocalPlayer.MicEnabled ? "开麦" : "闭麦";
-        }
-    }*/
+            LocalPlayer.Instance?.SetMicState();
+        });
+        MicButton.SetActive(true);
+        MicButton.GetComponent<BoxCollider2D>().size = MicButtonSpriteRenderer.size;
+        UpdateSprite();
+    }
+    
+    public static void UpdateSprite()
+    {
+        if (MicButtonSpriteRenderer == null || MicButtonText == null) return;
+        MicButtonSpriteRenderer.sprite = LocalPlayer.MicEnabled ? Sprites.MicOn : Sprites.MicOff;
+        MicButtonText.text = LocalPlayer.MicEnabled ? "开麦" : "闭麦";
+        LogInfo("UpdateMicSprite");
+    }
 
     [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Start)), HarmonyPostfix]
     private static void GameStartManagerPatch(GameStartManager __instance)
@@ -50,7 +66,22 @@ public class VoicePatch
     [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
     private static void OnPlayerJoinedPatch(AmongUsClient __instance, ClientData data)
     {
-        if (!__instance.AmHost) return;
-        RPCFlag.SyncConfig.SendRpcToPlayer(SendOption.None, NextVoiceManager.Instance._Config!.RpcWrite, data.Id);
+        if (LocalPlayer.Instance == null) return;
+        RPCFlag.SyncConfig.SendRpcToPlayer(SendOption.None, write =>
+        {
+            write.Write(LocalPlayer.Instance.player.PlayerId);
+            NextVoiceManager.Instance._Config!.RpcWrite(write);
+        }, data.Id);
+    }
+
+    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined)), HarmonyPostfix]
+    private static void OnGameJoinedPatch(AmongUsClient __instance)
+    {
+        if (LocalPlayer.Instance == null) return;
+        RPCFlag.SyncConfig.SendRpcToAll(SendOption.None, write =>
+        {
+            write.Write(LocalPlayer.Instance.player.PlayerId);
+            NextVoiceManager.Instance._Config!.RpcWrite(write);
+        });
     }
 }

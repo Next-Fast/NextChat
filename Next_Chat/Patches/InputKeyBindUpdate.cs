@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
+
 
 namespace Next_Chat.Patches;
 
@@ -9,7 +9,7 @@ public sealed class InputKeyBindUpdate : MonoBehaviour
 {
     public record KeyBind(string name, Action OnInput, params KeyCode[] KeyCodes)
     {
-        public bool IsPressed => KeyCodes.All(Input.GetKey);
+        public bool IsPressed() => KeyCodes.All(Input.GetKeyDown);
     }
 
     private static readonly List<KeyBind> AllBind = [];
@@ -22,16 +22,13 @@ public sealed class InputKeyBindUpdate : MonoBehaviour
         if (AllBind.Any(n => n.name == bind.name)) return;
         AllBind.Add(bind);
     }
-
-    static InputKeyBindUpdate()
-    {
-        ClassInjector.RegisterTypeInIl2Cpp<InputKeyBindUpdate>();
-    }
+    
 
     public void Update()
     {
-        foreach (var bing in AllBind.Where(n => n.IsPressed))
+        foreach (var bing in AllBind.Where(n => n.IsPressed()))
         {
+            LogInfo($"Input {bing.name} {string.Join(',', bing.KeyCodes.Select(n => n.ToString()))}");
             bing.OnInput();
         }
     }

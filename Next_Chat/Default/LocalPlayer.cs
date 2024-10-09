@@ -1,5 +1,6 @@
 using NAudio.Wave;
 using Next_Chat.Core;
+using Next_Chat.Patches;
 using WebRtcVadSharp;
 
 namespace Next_Chat.Default;
@@ -9,12 +10,22 @@ public class LocalPlayer(PlayerControl player) : DefaultPlayer(player)
     public static bool MicEnabled { get; set; } = true;
     public static bool SpeakerEnabled { get; set; } = true;
 
-    public static LocalPlayer Instance =>
-        (LocalPlayer)NextVoiceManager.Instance.Players.FirstOrDefault(n => n.player == PlayerControl.LocalPlayer)!;
+    public static LocalPlayer? Instance {
+        get
+        {
+            if (PlayerControl.LocalPlayer == null) return null;
+            
+            var player = NextVoiceManager.Instance.Players.FirstOrDefault(n => n.player == PlayerControl.LocalPlayer);
+            if (player != null)
+                return player as LocalPlayer;
+            
+            return NextVoiceManager.Instance.CreatePlayer(PlayerControl.LocalPlayer) as LocalPlayer;
+        }
+    }
 
     private static WaveTool? Tool => NextVoiceManager.Instance._WaveTool;
-    
-    
+
+
     public override void Dispose()
     {
         if (Tool is { WaveIn: not null })
@@ -39,6 +50,8 @@ public class LocalPlayer(PlayerControl player) : DefaultPlayer(player)
             state |= ~PlayerStates.Mute;
         }
         
+        LogInfo("mic: " + MicEnabled);
+        VoicePatch.UpdateSprite();
         NextVoiceManager.Instance.UpdateToolState();
     }
 

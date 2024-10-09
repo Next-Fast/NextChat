@@ -28,7 +28,7 @@ public static class UnityHelper
         return obj;
     }
     
-    public static Sprite? loadSpriteFromResources(string path, float pixelsPerUnit, bool cache = true)
+    public static Sprite? loadSpriteFromResources(string path, float pixelsPerUnit, Rect? _rect = null, bool cache = true)
     {
         try
         {
@@ -37,7 +37,7 @@ public static class UnityHelper
                 return CacheSprite.FirstOrDefault(n => n?.name == fileName);
             
             var texture = loadTextureFromResources(path);
-            var sprite = Sprite.Create(texture, new Rect(0, 0, texture!.width, texture.height), new Vector2(0.5f, 0.5f),
+            var sprite = Sprite.Create(texture, _rect ?? new Rect(0, 0, texture!.width, texture.height), new Vector2(0.5f, 0.5f),
                 pixelsPerUnit);
             sprite.name = fileName;
             switch (cache)
@@ -56,7 +56,33 @@ public static class UnityHelper
         {
             LogError("loading sprite from path: " + path);
         }
+        return null;
+    }
+    
+    public static Sprite? loadSprite(Texture2D texture, float pixelsPerUnit, Rect? _rect = null, bool cache = true)
+    {
+        try
+        {
+            var fileName = texture.name + $"_{pixelsPerUnit}";
+            var sprite = Sprite.Create(texture, _rect ?? new Rect(0, 0, texture!.width, texture.height), new Vector2(0.5f, 0.5f),
+                pixelsPerUnit);
+            sprite.name = fileName;
+            switch (cache)
+            {
+                case true:
+                    sprite.Dont();
+                    break;
+                case false:
+                    return sprite;
+            }
 
+            CacheSprite.Add(sprite);
+            return sprite;
+        }
+        catch
+        {
+            LogError("texture: " + texture.name);
+        }
         return null;
     }
 
@@ -64,7 +90,10 @@ public static class UnityHelper
     {
         try
         {
-            var texture = new Texture2D(2, 2, TextureFormat.ARGB32, true);
+            var texture = new Texture2D(2, 2, TextureFormat.ARGB32, true)
+            {
+                name = Path.GetFileName(path)
+            };
             var assembly = Assembly.GetExecutingAssembly();
             var stream = assembly.GetManifestResourceStream(path);
             var length = stream!.Length;

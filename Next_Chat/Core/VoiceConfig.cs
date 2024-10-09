@@ -1,6 +1,7 @@
 using Hazel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Next_Chat.Default;
 using Next_Chat.Patches;
 using OpusDotNet;
 using WebRtcVadSharp;
@@ -29,10 +30,18 @@ public class VoiceConfig : IRpcInfo
     {
         RPCPatch.rpcHandlers.Add(RPCFlag.SyncConfig, reader =>
         {
-            if (AmongUsClient.Instance.AmHost) return;
-            var config = new VoiceConfig();
-            config.RpcRead(reader);
-            NextVoiceManager.Instance.ChangeConfig(config);
+            var player = NextVoiceManager.Instance.GetPlayer(reader.ReadByte());
+            if (player is LocalPlayer)
+            {
+                var config = new VoiceConfig();
+                config.RpcRead(reader);
+                NextVoiceManager.Instance.ChangeConfig(config);
+            }
+            else
+            {
+                player.Config ??= new VoiceConfig();
+                player.Config.RpcRead(reader);
+            }
         });
     }
     
@@ -51,9 +60,20 @@ public class VoiceConfig : IRpcInfo
         };
     }
 
+    public WaveFormat BuildFloatWaveFormat()
+    {
+        return WaveFormat.CreateIeeeFloatWaveFormat(SampleRateInt, Channels);
+    }
+
+    public Wave16ToFloatProvider Build16ToFloatProvider(IWaveProvider provider)
+    {
+        return new Wave16ToFloatProvider(provider);
+    }
+    
+
     public MixingSampleProvider BuildMixingSampleProvider()
     {
-        return new MixingSampleProvider(BuildWaveFormat())
+        return new MixingSampleProvider(BuildFloatWaveFormat())
         {
             ReadFully = ReadFully
         };

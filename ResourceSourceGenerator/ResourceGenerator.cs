@@ -2,6 +2,7 @@
 using System.Text.Json;
 using CSharpPoet;
 using Microsoft.CodeAnalysis;
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
 namespace ResourceSourceGenerator;
 
@@ -70,24 +71,36 @@ public class ResourceGenerator : IIncrementalGenerator
         var spriteProvider = fileProvider.Where(n => n.RelativePath.StartsWith("Sprites") && n.RelativePath.EndsWith(".png")).Collect();
         context.RegisterSourceOutput(spriteProvider, (productionContext, sprites) =>
         {
-            Dictionary<string, float>? spriteConfig = null;
+            SpriteInfoJson? spriteConfig = null;
             if (Configs.TryGetValue("SpriteInfos.json", out var configText))
-                spriteConfig = JsonSerializer.Deserialize<Dictionary<string, float>>(configText);
+                spriteConfig = JsonSerializer.Deserialize<SpriteInfoJson>(configText);
             var spriteFields = new List<CSharpType.IMember>();
             foreach (var file in sprites)
             {
+                var fullName = file.RelativePath.GetFileName(true);
                 var filedName = file.RelativePath.GetFileName(false);
-                string? pixel = null;
-                if (spriteConfig != null && spriteConfig.TryGetValue(file.RelativePath.GetFileName(true), out var pixelValue))
-                    pixel = $"{pixelValue}f";
-
                 var spritePath = file.RelativePath.GetResourcePath();
                 var value = "new (";
+                var info = filedName;
+                
                 value += "\"";
                 value += spritePath;
                 value += "\"";
-                if (pixel != null)
-                    value += $", {pixel}";
+                if (spriteConfig != null)
+                {
+                    if (spriteConfig.Pixel.TryGetValue(fullName, out var pixelValue))
+                    {
+                        value += $", {pixelValue}f";
+                        info += $"_{pixelValue}f";
+                    }
+
+                    if (spriteConfig.Rect.TryGetValue(fullName, out var rect))
+                    {
+                        value += $", {rect.x}";
+                        value += $", {rect.y}";
+                        info += $"_({rect.x},{rect.y})";
+                    }
+                }
                 
                 value += ")";
                 spriteFields.Add(new CSharpField(Visibility.Public, "ResourceSprite", filedName)
@@ -96,7 +109,7 @@ public class ResourceGenerator : IIncrementalGenerator
                     IsReadonly = true,
                     DefaultValue = value
                 });
-                Sprites.Add($"{filedName}_{pixel ?? "115f"}");
+                Sprites.Add(info);
             }
             
             var sourceClass = new CSharpClass(Visibility.Public, "Sprites")
@@ -120,19 +133,10 @@ public class ResourceGenerator : IIncrementalGenerator
         var libProvider = fileProvider.Where(n => n.RelativePath.StartsWith("Lib") && n.RelativePath.EndsWith(".dll")).Collect();
         context.RegisterSourceOutput(libProvider, (productionContext, libs) =>
         {
-            Dictionary<string, bool>? libConfig = null;
-            if (Configs.TryGetValue("LibConfig.json", out var configText))
-                libConfig = JsonSerializer.Deserialize<Dictionary<string, bool>>(configText);
-            
             var libsValue = "";
             foreach (var file in libs)
             {
-                var write = false;
-                if (libConfig != null && libConfig.TryGetValue(file.RelativePath.GetFileName(true), out var _write))
-                    write = _write;
-
-                var writeValue = write ? ", true" : ""; 
-                libsValue += $"new (\"{file.RelativePath.GetResourcePath()}\"{writeValue})";
+                libsValue += $"new (\"{file.RelativePath.GetResourcePath()}\")";
                 if (libs.Last() != file)
                     libsValue += ",";
                 libsValue += "\n";
@@ -204,6 +208,16 @@ public class ResourceGenerator : IIncrementalGenerator
     }
 }
 
+public class SpriteInfoJson
+{
+    public Dictionary<string, float> Pixel { get; set; }
+
+    public Dictionary<string, rect> Rect { get; set; }
+    
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public record rect(int x, int y);
+}
+
 public static class Extension
 {
     public static string NormalizePath(this string path)
@@ -229,11 +243,11 @@ public static class Extension
     {
         var paths = path.Split('/').ToList();
         var fileName = paths.Last();
+        
         if (!hasExtension)
         {
             fileName = fileName[..fileName.LastIndexOf('.')];    
         }
-        
         return fileName;
     }
 }
