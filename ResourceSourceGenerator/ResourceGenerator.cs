@@ -168,6 +168,7 @@ public class ResourceGenerator : IIncrementalGenerator
             var configs = string.Join(",", Configs.Keys);
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             var sprites = string.Join(",", Sprites);
+
             var infoSourceText = new CSharpFile("NextResources")
             {
                 new CSharpClass("ResourceInfo")

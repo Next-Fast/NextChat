@@ -7,7 +7,7 @@ namespace Next_Chat.Default;
 internal class RPCNetworkEndpoint : INetworkEndpoint
 {
     public ConnectionMode Mode { get; init; } = ConnectionMode.Rpc;
-    public bool Starting = false;
+    public bool Starting;
 
     public void Start()
     {
@@ -17,7 +17,8 @@ internal class RPCNetworkEndpoint : INetworkEndpoint
         {
             var audio = new NextAudioData();
             audio.RpcRead(reader);
-            Receive(audio);
+            LogInfo($"receive AudioDar Id:{audio.dataId} Length:{audio.DataBytes.Length} sender:{audio.Player.player.name}");
+            NextVoiceManager.Instance.applyData(audio);
         });
         
         Starting = true;
@@ -25,12 +26,11 @@ internal class RPCNetworkEndpoint : INetworkEndpoint
 
     public void Send(NextAudioData data)
     {
-        RPCFlag.Send.SendRpcToPlayer(SendOption.None, data.RpcWrite, data.Player.player.OwnerId);
+        if (!Starting) return; 
+        RPCFlag.Send.SendRpcToAll(SendOption.None, data.RpcWrite);
+        LogInfo($"send AudioDar Id:{data.dataId} Length:{data.DataBytes.Length}");
     }
 
-    public void Receive(NextAudioData data)
-    {
-    }
 
     public void Stop()
     {

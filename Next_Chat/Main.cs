@@ -7,8 +7,12 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Next_Chat.Core;
+using Next_Chat.Patches;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace Next_Chat;
+
 
 [BepInAutoPlugin("Next.Voice", "Next.Voice", "1.0.0")]
 [UsedImplicitly]
@@ -31,11 +35,18 @@ public sealed partial class Main : BasePlugin
         System.Console.OutputEncoding = Encoding.UTF8;
         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
         Process.GetCurrentProcess().Exited += (sender, args) => Unload();
+        if (!File.Exists(Path.Combine(Paths.PluginPath, "Reactor.dll"))) 
+            SceneManager.add_sceneLoaded((UnityAction<Scene, LoadSceneMode>)(Action<Scene, LoadSceneMode>)((scene, mode) => 
+            {
+                if (!ModManager.InstanceExists) return;
+                if (!ModManager.Instance.ModStamp.gameObject.active)
+                    ModManager.Instance.ShowModStamp();
+            }));
 
         foreach (var lib in Libs.ResourceLibs)
             lib.Write();
-        
-        
+
+        AddComponent<InputKeyBindUpdate>().Dont();
         _Harmony.PatchAll();
     }
     

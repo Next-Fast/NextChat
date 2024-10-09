@@ -1,5 +1,7 @@
 using HarmonyLib;
+using Hazel;
 using Il2CppInterop.Runtime.Injection;
+using InnerNet;
 using Next_Chat.Core;
 using Next_Chat.Default;
 using TMPro;
@@ -21,7 +23,7 @@ public class VoicePatch
     
     public static TextMeshPro? MicButtonText { get; internal set; }
     
-    [HarmonyPatch(typeof(HudManager), nameof(HudManager.ToggleUseAndPetButton)), HarmonyPostfix]
+    /*[HarmonyPatch(typeof(HudManager), nameof(HudManager.ToggleUseAndPetButton)), HarmonyPostfix]
     private static void VoiceButtonPatch(HudManager __instance)
     {
         if (MicButton) return;
@@ -36,5 +38,19 @@ public class VoicePatch
             MicButtonSpriteRenderer.sprite = LocalPlayer.MicEnabled ? Sprites.MicOn : Sprites.MicOff;
             MicButtonText.text = LocalPlayer.MicEnabled ? "开麦" : "闭麦";
         }
+    }*/
+
+    [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Start)), HarmonyPostfix]
+    private static void GameStartManagerPatch(GameStartManager __instance)
+    {
+        NextVoiceManager.Instance.GetAllComponents();
+        NextVoiceManager.Instance.SetDefault();
+    }
+
+    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
+    private static void OnPlayerJoinedPatch(AmongUsClient __instance, ClientData data)
+    {
+        if (!__instance.AmHost) return;
+        RPCFlag.SyncConfig.SendRpcToPlayer(SendOption.None, NextVoiceManager.Instance._Config!.RpcWrite, data.Id);
     }
 }
