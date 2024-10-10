@@ -1,5 +1,6 @@
 using HarmonyLib;
 using InnerNet;
+using Next_Chat.Core;
 
 namespace Next_Chat.Patches;
 

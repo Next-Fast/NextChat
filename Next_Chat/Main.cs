@@ -7,6 +7,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using Il2CppInterop.Runtime.Injection;
 using Next_Chat.Core;
 using Next_Chat.Default;
 using Next_Chat.Patches;
@@ -41,9 +42,17 @@ public sealed partial class Main : BasePlugin
         
         SetModStamp();
         SetWrite();
+        RegisterIL2cpp();
         SetKeyBind();
 
         _Harmony.PatchAll();
+    }
+
+    private void RegisterIL2cpp()
+    {
+        ClassInjector.RegisterTypeInIl2Cpp<InputKeyBindUpdate>();
+        ClassInjector.RegisterTypeInIl2Cpp<ZOrderedSortingGroup>();
+        ClassInjector.RegisterTypeInIl2Cpp<PlayerIconInstance>();
     }
 
     private void SetModStamp()

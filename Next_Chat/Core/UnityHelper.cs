@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
@@ -178,4 +176,105 @@ public static class UnityHelper
         return get != null;
     }
     
+    public static GameObject CreateObject(string objName, Transform? parent, Vector3 localPosition,int? layer = null)
+    {
+        var obj = new GameObject(objName);
+        obj.transform.SetParent(parent);
+        obj.transform.localPosition = localPosition;
+        obj.transform.localScale = new Vector3(1f, 1f, 1f);
+        if (layer.HasValue) obj.layer = layer.Value;
+        else if (parent) obj.layer = parent.gameObject.layer;
+        return obj;
+    }
+
+    public static T CreateObject<T>(string objName, Transform? parent, Vector3 localPosition, int? layer = null)
+        where T : Component
+    {
+        var obj = CreateObject(objName, parent, localPosition, layer);
+        var component = obj.AddComponent<T>();
+
+        return component;
+    }
+
+
+    public static List<T> ToSystemList<T>(this Il2CppSystem.Collections.Generic.List<T> list)
+    {
+        var newList = new List<T>();
+        foreach (var value in list)
+            newList.Add(value);
+        return newList;
+    }
+
+    public static IEnumerable<T> GetFastEnumerator<T>(this Il2CppSystem.Collections.Generic.List<T> list) where T : Il2CppSystem.Object
+        => new Il2CppListEnumerable<T>(list);
+    
+}
+
+#pragma warning disable CS0169 CS0649
+public unsafe class Il2CppListEnumerable<T> : IEnumerable<T>, IEnumerator<T> where T : Il2CppSystem.Object
+{
+    private struct Il2CppListStruct
+    {
+        private IntPtr _unusedPtr1;
+        private IntPtr _unusedPtr2;
+        public IntPtr _items;
+        public int _size;
+    }
+
+    private static readonly int _elemSize;
+    private static readonly int _offset;
+    private static readonly Func<IntPtr, T> _objFactory;
+
+    static Il2CppListEnumerable()
+    {
+        _elemSize = IntPtr.Size;
+        _offset = 4 * IntPtr.Size;
+
+        var constructor = typeof(T).GetConstructor([typeof(IntPtr)]);
+        var ptr = Expression.Parameter(typeof(IntPtr));
+        var create = Expression.New(constructor!, ptr);
+        var lambda = Expression.Lambda<Func<IntPtr, T>>(create, ptr);
+        _objFactory = lambda.Compile();
+    }
+
+    private readonly IntPtr _arrayPointer;
+    private readonly int _count;
+    private int _index = -1;
+
+    public Il2CppListEnumerable(Il2CppSystem.Collections.Generic.List<T> list)
+    {
+        var listStruct = (Il2CppListStruct*)list.Pointer;
+        _count = listStruct->_size;
+        _arrayPointer = listStruct->_items;
+    }
+
+    object IEnumerator.Current => Current;
+    public T Current { get; private set; } = null!;
+
+    public bool MoveNext()
+    {
+        if (++_index >= _count) return false;
+        var refPtr = *(IntPtr*)IntPtr.Add(IntPtr.Add(_arrayPointer, _offset), _index * _elemSize);
+        Current = _objFactory(refPtr);
+        return true;
+    }
+
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        return this;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return this;
+    }
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    } 
 }

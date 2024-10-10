@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
+using Next_Chat.Core;
 using UnityEngine;
 
 
@@ -32,13 +35,16 @@ public sealed class InputKeyBindUpdate : MonoBehaviour
             bing.OnInput();
         }
     }
-
+    
+    
+    
     public void FixedUpdate()
     {
         foreach (var player in NextVoiceManager.Instance.Players)
         {
             player.OnUpdate();
         }
+        PlayersOverlay.Instance?.OnUpdate();
     }
 }
 

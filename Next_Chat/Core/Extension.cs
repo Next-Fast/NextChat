@@ -60,7 +60,8 @@ public static class Extension
 
     public static T AddComponent<T>(this BasePlugin plugin) where T : MonoBehaviour
     {
-        ClassInjector.RegisterTypeInIl2Cpp<T>();
+        if (!ClassInjector.IsTypeRegisteredInIl2Cpp(typeof(T))) 
+            ClassInjector.RegisterTypeInIl2Cpp<T>();
         return plugin.AddComponent<T>().Dont();
     }
     
