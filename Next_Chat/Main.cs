@@ -53,6 +53,7 @@ public sealed partial class Main : BasePlugin
         ClassInjector.RegisterTypeInIl2Cpp<InputKeyBindUpdate>();
         ClassInjector.RegisterTypeInIl2Cpp<ZOrderedSortingGroup>();
         ClassInjector.RegisterTypeInIl2Cpp<PlayerIconInstance>();
+        ClassInjector.RegisterTypeInIl2Cpp<VCFrame>();
     }
 
     private void SetModStamp()
