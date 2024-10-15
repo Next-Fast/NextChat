@@ -9,27 +9,26 @@ namespace Next_Chat.Core;
 
 public static class Extension
 {
-    public static DefaultPlayer AddProvider(this DefaultPlayer player, VoiceConfig config, MixingSampleProvider provider)
+    public static void AddProvider(this DefaultPlayer player, VoiceConfig config, MixingSampleProvider provider)
     {
-        player.RemoveProvider(provider);
+        if (player.VolumeProvider != null)
+            provider.RemoveMixerInput(player.VolumeProvider);
+        
         player.BufferedProvider = null;
+        player._FloatProvider = null;
         player.SampleProvider = null;
+        player.VolumeProvider = null;
         player.CreateProvider(config);
-        provider.AddMixerInput(player.SampleProvider);
-        return player;
+        provider.AddMixerInput(player.VolumeProvider);
     }
-
-    public static DefaultPlayer RemoveProvider(this DefaultPlayer player, MixingSampleProvider provider)
-    {
-        provider.RemoveMixerInput(player.SampleProvider);
-        return player;
-    }
+    
 
     public static DefaultPlayer CreateProvider(this DefaultPlayer player, VoiceConfig config)
     {
         player.BufferedProvider = config.BuildBufferedWaveProvider();
         player._FloatProvider = config.Build16ToFloatProvider(player.BufferedProvider);
         player.SampleProvider = player._FloatProvider.GetConverter();
+        player.VolumeProvider = new VolumeSampleProvider(player.SampleProvider);
         return player;
     }
 

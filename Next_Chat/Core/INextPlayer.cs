@@ -8,6 +8,8 @@ public interface INextPlayer : IDisposable
     public PlayerStates state { get; set; }
     
     public bool IsSpeaking { get; set; }
+    
+    public bool HasInstall { get; set; }
 
     public void AddData(NextAudioData data);
 

@@ -66,7 +66,17 @@ public class LocalPlayer(PlayerControl player) : DefaultPlayer(player)
         if (Tool == null) return;
         if (!Tool.BuildVad) return;
         if (!Tool.Vad!.HasSpeech(e.Buffer)) return;
-        var data = NextVoiceManager.Instance.GenerateAudioData(e.Buffer, e.BytesRecorded);
-        NextVoiceManager.Instance.Endpoint?.Send(data);
+        if (NextVoiceManager.Instance.Players.Count <= 1)
+        {
+            Instance?.AddLocalData(e.Buffer, e.BytesRecorded);
+            LogInfo($"Add LocalDataLength {e.BytesRecorded}");
+        }
+        else
+        {
+            var data = NextVoiceManager.Instance.GenerateAudioData(e.Buffer);
+            if (data == null) return;
+            LogInfo($"GenerateAudioData: {data.dataId} : {e.BytesRecorded} : {data.Length}");
+            NextVoiceManager.Instance.Endpoint?.Send(data);
+        }
     }
 }

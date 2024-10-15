@@ -1,6 +1,5 @@
 using InnerNet;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 namespace Next_Chat.Core;
@@ -10,91 +9,91 @@ public class PlayersOverlay
 {
     public static PlayersOverlay? Instance { get; private set; }
     public static PlayerIconInstance? IcoPrefab { get; private set; }
-    public readonly List<PlayerIconInstance> HasPlayerIcons = [];
     public readonly List<PlayerIconInstance> _AllInstance = [];
 
-    public void CreateIcon(PlayerControl player)
+    public PlayerIconInstance GetOrCreate(INextPlayer _player)
     {
-        if (!IcoPrefab)
-            IcoPrefab = CreatePrefab();
-        var instance = _AllInstance.FirstOrDefault(n => !n.player);
-        if (!instance)
+        var instance = _AllInstance.FirstOrDefault(n => n.player == _player.player) 
+                       ?? 
+                       CreateIcon(_player);
+        return instance;
+    }
+    
+    public PlayerIconInstance CreateIcon(INextPlayer _player)
+    {
+        IcoPrefab ??= CreatePrefab();
+        var instance = _AllInstance.FirstOrDefault(n => n.player is null);
+        if (instance is null)
         {
-            var newInstance = Object.Instantiate(IcoPrefab, IconHolder.transform);
-            newInstance.SetPlayer(player);
+            var newInstance = Object.Instantiate(IcoPrefab, IconHolder.transform, true);
+            newInstance.name = $"Icon:{_player.player.name}";
+            newInstance.SetPlayer(_player.player);
             newInstance.IsEnable = IsEnable;
             _AllInstance.Add(newInstance);
+            return newInstance;
         }
 
-        instance!.IsEnable = IsEnable;
-        instance.SetPlayer(player);
+        instance.transform.SetParent(IconHolder.transform);
+        instance.gameObject.name = $"Icon:{_player.player.name}";
+        instance.IsEnable = IsEnable;
+        instance.SetPlayer(_player.player);
+        return instance;
     }
 
-    private PlayerIconInstance CreatePrefab()
+    private static PlayerIconInstance CreatePrefab()
     {
-        var obj = UnityHelper.CreateObject("Icon", IconHolder.transform, Vector3.zero);
-        var instance = obj.AddComponent<PlayerIconInstance>();
-        var back = UnityHelper.CreateObject<SpriteRenderer>("Back", obj.transform, new Vector3(0, 0, 0.1f));
-        back.sprite = Sprites.OverlayIcon.GetSprite(0);
-        back.color = new Color(0.45f, 0.45f, 0.45f);
+        var instance = UnityHelper.CreateObject<PlayerIconInstance>("IconPrefab", null, Vector3.zero);
+        instance.Back = UnityHelper.CreateObject<SpriteRenderer>("Back", instance.transform, new Vector3(0, 0, 0.1f));
+        instance.Back.sprite = Sprites.OverlayIcon.GetSprite(0);
+        instance.Back.color = new Color(0.45f, 0.45f, 0.45f);
         
-        var front = UnityHelper.CreateObject<SpriteRenderer>("Front", obj.transform, new Vector3(0, 0, 0.05f));
-        front.sprite = Sprites.OverlayIcon.GetSprite(1);
-        front.color = new Color(0.23f, 0.23f, 0.23f);
+        instance.Front = UnityHelper.CreateObject<SpriteRenderer>("Front", instance.transform, new Vector3(0, 0, 0.05f));
+        instance.Front.sprite = Sprites.OverlayIcon.GetSprite(1);
+        instance.Front.color = new Color(0.23f, 0.23f, 0.23f);
         
-        var spriteMask = UnityHelper.CreateObject<SpriteMask>("Mask", obj.transform, Vector3.zero);
-        spriteMask.sprite = Sprites.OverlayIcon.GetSprite(1);
-
-        var player = GetPlayerIcon(PlayerControl.LocalPlayer.CurrentOutfit, 
-            spriteMask.transform, new Vector3(0, -0.3f, -1f),
+        instance.SpriteMask = UnityHelper.CreateObject<SpriteMask>("Mask", instance.transform, Vector3.zero);
+        instance.SpriteMask.sprite = Sprites.OverlayIcon.GetSprite(1);
+        
+        instance.Poolable = GetPlayerIcon(PlayerControl.LocalPlayer.CurrentOutfit, 
+            instance.SpriteMask.transform, new Vector3(0, -0.3f, -1f),
             Vector3.one);
-        player.TogglePet(false);
-        player.cosmetics.SetMaskType(PlayerMaterial.MaskType.ComplexUI);
-        player.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
-        obj.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+        instance.Poolable.TogglePet(false);
+        instance.Poolable.cosmetics.SetMaskType(PlayerMaterial.MaskType.ComplexUI);
+        instance.Poolable.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
+        instance.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
         
         AddSortingGroup(
-            player.cosmetics.skin.layer.gameObject,
-            player.cosmetics.hat.FrontLayer.gameObject,
-            player.cosmetics.visor.Image.gameObject,
-            player.cosmetics.currentBodySprite.BodySprite.gameObject
+            instance.Poolable.cosmetics.skin.layer.gameObject,
+            instance.Poolable.cosmetics.hat.FrontLayer.gameObject,
+            instance.Poolable.cosmetics.visor.Image.gameObject,
+            instance.Poolable.cosmetics.currentBodySprite.BodySprite.gameObject
         );
-        instance.Poolable = player;
-        return instance;
+        instance.gameObject.SetActive(false);
+        return instance.DontDestroyOnLoad();
     }
 
     public PlayersOverlay(Func<PlayerIconInstance, bool> isEnable)
     {
         IsEnable = isEnable;
         Instance = this;
+        IconHolder = UnityHelper.CreateObject("IconHolder", HudManager.Instance.transform, new Vector3(0, 2.7f, -120f)).Dont();
     }
     
-    private readonly GameObject IconHolder = UnityHelper.CreateObject("IconHolder", HudManager.Instance.transform, new Vector3(0, 2.7f, -120f));
+    private readonly GameObject IconHolder;
     public Func<PlayerIconInstance, bool> IsEnable { get; set; }
+    
 
-
-    // ReSharper disable Unity.PerformanceAnalysis
     internal void OnUpdate()
     {
+        if (!IconHolder) return;
+        
         if((MeetingHud.Instance && !ExileController.Instance) || PlayerCustomizationMenu.Instance || GameSettingMenu.Instance)
         {
             IconHolder.gameObject.SetActive(false);
             return;
         }
         IconHolder.gameObject.SetActive(true);
-
-        if (
-            AmongUsClient.Instance.GameState < InnerNetClient.GameStates.Started
-            &&
-            PlayerControl.AllPlayerControls.Count != HasPlayerIcons.Count
-            )
-        {
-            var noPlayer = PlayerControl.AllPlayerControls
-                .ToSystemList()
-                .First(p => HasPlayerIcons.All(i => i.player != p));
-
-            CreateIcon(noPlayer);
-        }
+        
         var num = 0;
         foreach (var i in _AllInstance.Where(i => i.gameObject.active))
         {
@@ -119,9 +118,9 @@ public class PlayersOverlay
         player.SetNameColor(Color.white);
         return player;
     }
-    
 
-    private static void AddSortingGroup(params GameObject[] objects)
+
+    internal static void AddSortingGroup(params GameObject[] objects)
     {
         foreach (var obj in objects)
         {
@@ -130,79 +129,3 @@ public class PlayersOverlay
         }
     }
 }
-
-
-public class PlayerIconInstance : MonoBehaviour
-{
-    public PlayerControl? player { get; set; }
-    public PoolablePlayer Poolable { get; set; }
-    public Func<PlayerIconInstance, bool>? IsEnable { get; set; }
-    public bool HasPlayer => player;
-
-    public void LateUpdate()
-    {
-        if (PlayersOverlay.Instance == null) return;
-        gameObject.SetActive(player && (IsEnable?.Invoke(this) ?? false));
-
-        if (HasPlayer) return;
-        if (PlayersOverlay.Instance.HasPlayerIcons.Contains(this))
-            PlayersOverlay.Instance.HasPlayerIcons.Remove(this);
-    }
-
-    public void UpdateIcon()
-    {
-        if (!player) return;
-        Poolable.UpdateFromPlayerOutfit(player!.CurrentOutfit, PlayerMaterial.MaskType.ComplexUI, false, false);
-    }
-
-    public void SetPlayer(PlayerControl _player)
-    {
-        player = _player;
-        Poolable.name = player.CurrentOutfit.PlayerName;
-        UpdateIcon();
-        if (!PlayersOverlay.Instance!.HasPlayerIcons.Contains(this))
-            PlayersOverlay.Instance.HasPlayerIcons.Add(this);
-    }
-}
-
-
-public class ZOrderedSortingGroup : MonoBehaviour
-{
-    private SortingGroup? group;
-    private Renderer? renderer;
-    public int ConsiderParents;
-    public void SetConsiderParentsTo(Transform parent)
-    {
-        var num = 0;
-        var t = transform;
-        while(!(t == parent || t == null))
-        {
-            num++;
-            t = t.parent;
-        }
-        ConsiderParents = num;
-    }
-    public void Start()
-    {
-        if(!gameObject.TryGetComponent<Renderer>(out renderer)) 
-            group = gameObject.AddComponent<SortingGroup>();
-    }
-
-    private const float rate = 20000f;
-    private const int baseValue = 5;
-
-    public void Update()
-    {
-        var z = transform.localPosition.z;
-        var t = transform;
-        for (var i = 0; i < ConsiderParents; i++)
-        {
-            t = t.parent;
-            z += t.localPosition.z;
-        }
-        var layer = baseValue - (int)(rate * z);
-        if (group is not null)group.sortingOrder = layer;
-        if(renderer is not null) renderer.sortingOrder = layer;
-    }
-}
-

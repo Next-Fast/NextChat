@@ -55,13 +55,8 @@ public class VoicePatch
         MicButtonText.text = LocalPlayer.MicEnabled ? "开麦" : "闭麦";
         LogInfo("UpdateMicSprite");
     }
-
-    [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Start)), HarmonyPostfix]
-    private static void GameStartManagerPatch(GameStartManager __instance)
-    {
-        NextVoiceManager.Instance.GetAllComponents();
-        NextVoiceManager.Instance.SetDefault();
-    }
+    
+    
 
     [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
     private static void OnPlayerJoinedPatch(AmongUsClient __instance, ClientData data)

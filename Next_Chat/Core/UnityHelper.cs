@@ -25,6 +25,12 @@ public static class UnityHelper
         obj.hideFlags |= HideFlags.HideAndDontSave | HideFlags.DontSaveInEditor;
         return obj;
     }
+
+    public static T DontDestroyOnLoad<T>(this T obj) where T : Object
+    {
+        Object.DontDestroyOnLoad(obj);
+        return obj;
+    }
     
     public static Sprite? loadSpriteFromResources(string path, float pixelsPerUnit, Rect? _rect = null, bool cache = true)
     {
@@ -183,7 +189,7 @@ public static class UnityHelper
         obj.transform.localPosition = localPosition;
         obj.transform.localScale = new Vector3(1f, 1f, 1f);
         if (layer.HasValue) obj.layer = layer.Value;
-        else if (parent) obj.layer = parent.gameObject.layer;
+        else if (parent) obj.layer = parent!.gameObject.layer;
         return obj;
     }
 
@@ -210,7 +216,8 @@ public static class UnityHelper
     
 }
 
-#pragma warning disable CS0169 CS0649
+#pragma warning disable CS0169
+#pragma warning disable CS0649
 public unsafe class Il2CppListEnumerable<T> : IEnumerable<T>, IEnumerator<T> where T : Il2CppSystem.Object
 {
     private struct Il2CppListStruct

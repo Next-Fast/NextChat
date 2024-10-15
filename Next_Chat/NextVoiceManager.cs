@@ -17,6 +17,8 @@ public record VoiceComponent(string Name, int Id, object Component)
     
     public bool IsMic => Component is WaveInCapabilities;
     public bool IsSpeaker => Component is WaveOutCapabilities;
+
+    public bool IsWasApi => Component is MMDevice;
     
     public static implicit operator WaveInCapabilities?(VoiceComponent component)
     {
@@ -31,6 +33,13 @@ public record VoiceComponent(string Name, int Id, object Component)
             return null;
         return (WaveOutCapabilities)component.Component;
     }
+
+    public static implicit operator MMDevice?(VoiceComponent component)
+    { 
+        if (!component.IsWasApi)
+            return null; 
+        return (MMDevice)component.Component;
+    }
 };
 
 public class NextVoiceManager : InstanceClass<NextVoiceManager>
@@ -39,8 +48,9 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     {
         _Instance = this;
         ChangeEndpoint(ConnectionMode.Rpc);
-        SetSpeakerPlay();
+        GetAllComponents();
         ChangeConfig(VoiceConfig.CreateDefault());
+        SetDefault();
     }
     
     public List<INextPlayer> Players { get; set; } = [];
@@ -49,12 +59,11 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     public IReadOnlyList<VoiceComponent> Components => _Components.AsReadOnly();
     public VoiceComponent? CurrentMic { get; private set; }
     public VoiceComponent? CurrentSpeaker { get; private set; }
-    public float Volume { get; private set; }
     public WaveTool? _WaveTool { get; private set; }
     public VoiceConfig? _Config { get; private set; }
     public int LastId { get; private set; }
     public MixingSampleProvider? MixingProvider { get; private set; }
-    
+    public IWavePlayer? CurrentOutput { get; private set; }
 
     public void ChangeConfig(VoiceConfig config)
     {
@@ -64,22 +73,22 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         ReInitTool();
     }
 
-    public NextAudioData GenerateAudioData(byte[] data, int byteNumber)
+    public NextAudioData? GenerateAudioData(byte[] data)
     {
+        if (_WaveTool == null || _Config == null || _WaveTool.Encoder == null) return null;
         LastId++;
         return new NextAudioData
         {
-            DataBytes = data,
             Player = LocalPlayer.Instance!,
             dataId = LastId,
-            pcmLength = byteNumber
-        };
+        }.AddFormInfo(new EncodeInfo(_Config.BuffedLength, _WaveTool.Encoder, data));
     }
 
-    public void applyData(NextAudioData data)
+    public DecodeInfo? GetDecodeInfo(NextAudioData data)
     {
-        data.Player.AddData(data);
-        data.Player.IsSpeaking = true;
+        if (_WaveTool == null || _Config == null || _WaveTool.Decoder == null) return null;
+        data.GetDecodeByte(_WaveTool.Decoder, _Config.BuffedLength, out var length, out var dataBytes);
+        return new DecodeInfo(length, dataBytes);
     }
 
     public void ReInitTool()
@@ -91,42 +100,44 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         }
 
         _WaveTool?.Dispose();
-        _WaveTool = WaveTool.BuildFormConfig(_Config);
+        _WaveTool = WaveTool.BuildFormConfig(_Config, buildWasapiOut:true);
         _WaveTool.WaveIn!.DataAvailable += LocalPlayer.OnDataReceived;
-        _WaveTool.WaveIn!.RecordingStopped += (sender, args) => waveInState = false;
+        _WaveTool.WaveIn!.RecordingStopped += (sender, args) =>
+        {
+            waveInState = false;
+            LocalPlayer.Instance!.IsSpeaking = false;
+        };
         waveInState = false;
         MixingProvider = _Config.BuildMixingSampleProvider();
         foreach (var player in Players)
         {
             ((DefaultPlayer)player).AddProvider(_Config, MixingProvider);
         }
+
+        CurrentOutput = _WaveTool.WasapiWaveOut;
+        SetSpeakerPlay();
     }
     
-    public bool WaveOutState => _WaveTool?.WaveOut?.PlaybackState == PlaybackState.Playing;
+    public bool State => CurrentOutput?.PlaybackState == PlaybackState.Playing;
     public DefaultPlayer GetPlayer(byte id) => (DefaultPlayer)Players.First(n => n.player.PlayerId == id);
-
-    public void SetVolume(float volume)
-    {
-        Volume = volume;
-        if (_WaveTool?.WaveOut != null)
-            _WaveTool.WaveOut.Volume = volume;
-    }
+    
 
     private bool waveInState;
 
     public void SetSpeakerPlay()
     {
-        if (!_WaveTool?.BuildOutEvent ?? false)
-            ReInitTool();
-
-        var WaveOut = _WaveTool?.WaveOut;
-        if (WaveOut == null) return;
-        WaveOut.Init(MixingProvider, _Config!.convertTo16Bit);
-        WaveOut.Play();
+        if (CurrentOutput == null) return;
+        CurrentOutput.Init(MixingProvider);
+        CurrentOutput.Play();
+        
+        LogInfo("Set Speaker Play");
     }
 
     public void UpdateToolState()
     {
+        if (CurrentMic == null || CurrentSpeaker == null)
+            SetDefault();
+        
         if (_WaveTool == null)
             ReInitTool();
 
@@ -152,8 +163,10 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         if (component.IsSpeaker)
         {
             CurrentSpeaker = component;
-            if (_WaveTool?.WaveOut != null)
-                _WaveTool.WaveOut.DeviceNumber = component.Id;
+            if (CurrentOutput is WaveOutEvent outEvent)
+                outEvent.DeviceNumber = component.Id;
+            
+            LogInfo($"SetSpeaker {component.Name}");
         }
 
         if (component.IsMic)
@@ -161,6 +174,8 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
             CurrentMic = component;
             if (_WaveTool?.WaveIn != null)
                 _WaveTool.WaveIn.DeviceNumber = component.Id;
+            
+            LogInfo($"SetMic {component.Name}");
         }
 
         if (component is { IsMic: false, IsSpeaker: false })
@@ -180,6 +195,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
             {
                 Channels = mic.Channels
             });
+            LogInfo($"Add Mic {mic.ProductName} {index}");
             index++;
         }
 
@@ -190,14 +206,31 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
             {
                 Channels = speaker.Channels
             });
+            LogInfo($"Add Speaker {speaker.ProductName} {index}");
+            index++;
+        }
+
+
+        index = 0;
+        foreach (var device in new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
+        {
+            _Components.Add(new VoiceComponent(device.DeviceFriendlyName, index, device));
+            LogInfo($"Add Mic {device.DeviceFriendlyName} {index}");
             index++;
         }
     }
 
     public void SetDefault()
     {
-        CurrentMic ??= Components.FirstOrDefault(n => n.IsMic);
-        CurrentSpeaker ??= Components.FirstOrDefault(n => n.IsSpeaker);
+        LogInfo("SetDefault Components");
+        var mic = Components.FirstOrDefault(n => n.IsMic);
+        var speaker = Components.FirstOrDefault(n => n.IsSpeaker);
+        
+        if (mic != null)
+            ChangeComponent(mic);
+        
+        if (speaker != null)
+            ChangeComponent(speaker);
     }
     
     
@@ -234,6 +267,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         if (MixingProvider != null && _Config != null)
             NewPlayer.AddProvider(_Config, MixingProvider);
         
+        NewPlayer.Create();
         Players.Add(NewPlayer);
         return NewPlayer;
     }

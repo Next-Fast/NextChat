@@ -1,44 +1,28 @@
 using Hazel;
+using OpusDotNet;
 
 namespace Next_Chat.Core;
 
-public class NextAudioData : IRpcInfo, IActive
+public class NextAudioData : IRpcInfo
 {
-    
     public int dataId { get; set; }
     public INextPlayer Player { get; set; } = null!;
-    
-    public int pcmLength { get; set; }
-    public int EncodedLength { get; set; }
-    public byte[] EncodeBytes => GetEncodedBytes();
-    public byte[] DataBytes { get; set; } = [];
 
-    public byte[] DecodeBytes => GetDecodedBytes();
+    public int Length { get; set; }
+    private byte[] DataBytes { get; set; } = [];
 
-    public int DecodeLength
+    public NextAudioData AddFormInfo(EncodeInfo info)
     {
-        get;
-        set;
-    }
+        var encoder = info.Encoder;
+        var data = info.Data;
+        var length = info.buffedLength;
+        var opusLength = length / 4;
+        var opusBytes = new byte[opusLength];
 
-    private static WaveTool? Tool => NextVoiceManager.Instance._WaveTool;
-
-    private byte[] GetDecodedBytes()
-    {
-        if (DataBytes.Length == 0) return []; 
-        var pcmBuffer = new byte[pcmLength];
-        DecodeLength = Tool!.Decoder!.Decode(DataBytes, DataBytes.Length, pcmBuffer, pcmLength);
-        return pcmBuffer;
-    }
-
-    private byte[] GetEncodedBytes()
-    {
-        if (DataBytes.Length == 0) return [];
-        var opusBuffer = new byte[2048];
-        var length = Tool!.Encoder!.Encode(DataBytes, pcmLength, opusBuffer, 2048);
-        var array = opusBuffer.Take(length).ToArray();
-        EncodedLength = length;
-        return array;
+        var encodeLength = encoder.Encode(data, length, opusBytes, opusLength);
+        DataBytes = opusBytes.Take(encodeLength).ToArray();
+        Length = encodeLength;
+        return this;
     }
     
     public void Dispose()
@@ -49,20 +33,27 @@ public class NextAudioData : IRpcInfo, IActive
     {
         writer.Write(dataId);
         writer.Write(Player.player.PlayerId);
-        writer.Write(pcmLength);
-        writer.Write(EncodedLength);
-        writer.Write(EncodeBytes);
+        writer.Write(Length);
+        writer.Write(DataBytes);
     } 
 
     public void RpcRead(MessageReader reader)
     {
         dataId = reader.ReadInt32();
         Player = NextVoiceManager.Instance.GetPlayer(reader.ReadByte());
-        pcmLength = reader.ReadInt32();
-        EncodedLength = reader.ReadInt32();
-        DataBytes = reader.ReadBytes(EncodedLength);
+        Length = reader.ReadInt32();
+        DataBytes = reader.ReadBytes(Length);
     }
 
-    public bool _active { get; set; }
-    public int _Id { get; set; }
+    public void GetDecodeByte(OpusDecoder decoder, int buffedLength, out int length, out byte[] Data)
+    {
+        var buffed = new byte[buffedLength];
+        var decodeLength = decoder.Decode(DataBytes, Length, buffed, buffedLength);
+        length = decodeLength;
+        Data = buffed.Take(decodeLength).ToArray();
+    }
 }
+
+public record EncodeInfo(int buffedLength, OpusEncoder Encoder,  byte[] Data);
+
+public record DecodeInfo(int buffedLength, byte[] Data);

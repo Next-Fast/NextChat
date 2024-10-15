@@ -36,7 +36,9 @@ public sealed partial class Main : BasePlugin
     
     public override void Load()
     {
-        System.Console.OutputEncoding = Encoding.UTF8;
+        if (ConsoleManager.ConsoleActive)
+            System.Console.OutputEncoding = Encoding.UTF8;
+        
         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
         Process.GetCurrentProcess().Exited += (sender, args) => Unload();
         
@@ -56,15 +58,13 @@ public sealed partial class Main : BasePlugin
         ClassInjector.RegisterTypeInIl2Cpp<VCFrame>();
     }
 
-    private void SetModStamp()
+    private static void SetModStamp()
     {
-        if (!File.Exists(Path.Combine(Paths.PluginPath, "Reactor.dll"))) 
-            SceneManager.add_sceneLoaded((UnityAction<Scene, LoadSceneMode>)(Action<Scene, LoadSceneMode>)((scene, mode) => 
-            {
-                if (!ModManager.InstanceExists) return;
-                if (!ModManager.Instance.ModStamp.gameObject.active)
-                    ModManager.Instance.ShowModStamp();
-            }));
+        SceneManager.add_sceneLoaded((UnityAction<Scene, LoadSceneMode>)(Action<Scene, LoadSceneMode>)((scene, mode) => 
+        { 
+            if (!ModManager.InstanceExists) return;
+                ModManager.Instance.ShowModStamp();
+        }));
     }
 
     private void SetKeyBind()

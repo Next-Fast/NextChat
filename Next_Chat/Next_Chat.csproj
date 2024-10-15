@@ -8,7 +8,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Platform>x86;</Platform>
         <OutDir>../Output</OutDir>
-
         <DebugType>embedded</DebugType>
         <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
     </PropertyGroup>
@@ -32,6 +31,6 @@
     
     <Target Name="Copy" AfterTargets="AfterBuild" Condition="'$(AmongUsLatest)' != ''">
         <Move SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(AmongUsLatest)/BepInEx/plugins/" />
-        <Message Text="Move $(SourceFiles) To $(DestinationFolder)"/>
+        <Message Text="Move To '$(AmongUsLatest)'/BepInEx/plugins/"/>
     </Target>
 </Project>

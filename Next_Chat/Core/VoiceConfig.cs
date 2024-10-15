@@ -1,4 +1,5 @@
 using Hazel;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Next_Chat.Default;
@@ -21,6 +22,9 @@ public class VoiceConfig : IRpcInfo
     public bool ReadFully { get; set; }
     
     public bool convertTo16Bit { get; set; }
+    
+    public int BuffedLength => SampleRateInt * Bits / 8 * Channels * (FrameLengthInt / 1000);
+    
 
     public static implicit operator OperatingMode(VoiceConfig config) => config.OperatingMode;
     public static implicit operator FrameLength(VoiceConfig config) => config.GetFrameLengthType();
@@ -51,7 +55,7 @@ public class VoiceConfig : IRpcInfo
         {
             SampleRateInt = 48000,
             FrameLengthInt = 30,
-            Channels = 1,
+            Channels = 2,
             Bits = 16,
             BufferOfNumber = 3,
             DesiredLatency = 300,
@@ -123,14 +127,21 @@ public class VoiceConfig : IRpcInfo
         };
     }
 
+    public WasapiOut BuildWasapiOut()
+    {
+        return new WasapiOut
+        {
+            Volume = 1
+        };
+    }
+
     public WaveOutEvent BuildWaveOut()
     {
         return new WaveOutEvent
         {
             DeviceNumber = NextVoiceManager.Instance.CurrentSpeaker?.Id ?? -1,
             NumberOfBuffers = BufferOfNumber,
-            DesiredLatency = DesiredLatency,
-            Volume = NextVoiceManager.Instance.Volume
+            DesiredLatency = DesiredLatency
         };
     }
 

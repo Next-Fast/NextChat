@@ -8,6 +8,7 @@ public class WaveTool : IDisposable
 {
     private WaveInEvent? _waveIn;
     private WaveOutEvent? _waveOut;
+    private WasapiOut? _wasapiOut;
     private OpusEncoder? _encoder;
     private OpusDecoder? _decoder;
     private WebRtcVad? _vad;
@@ -16,6 +17,7 @@ public class WaveTool : IDisposable
     
     public bool BuildInEvent { get; set; }
     public bool BuildOutEvent { get; set; }
+    public bool BuildWasapiOut { get; set; }
     public bool BuildEncoder { get; set; }
     public bool BuildDecoder { get; set; }
     public bool BuildVad { get; set; }
@@ -31,6 +33,17 @@ public class WaveTool : IDisposable
         }
     }
 
+    public WasapiOut? WasapiWaveOut
+    {
+        get
+        {
+            if (!BuildWasapiOut)
+                return null;
+
+            return _wasapiOut ??= Config?.BuildWasapiOut();
+        }
+    }
+    
     public WaveOutEvent? WaveOut
     {
         get
@@ -87,7 +100,8 @@ public class WaveTool : IDisposable
     public static WaveTool BuildFormConfig(
         VoiceConfig config,
         bool buildInEvent = true,
-        bool buildOutEvent = true,
+        bool buildWasapiOut = false,
+        bool buildOutEvent = false,
         bool buildEncoder = true,
         bool buildDecoder = true,
         bool buildVad = true)
@@ -99,7 +113,8 @@ public class WaveTool : IDisposable
             BuildOutEvent = buildOutEvent,
             BuildEncoder = buildEncoder,
             BuildDecoder = buildDecoder,
-            BuildVad = buildVad
+            BuildVad = buildVad,
+            BuildWasapiOut = buildWasapiOut
         };
     }
 
