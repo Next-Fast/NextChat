@@ -91,7 +91,7 @@ internal static class ChatChannelPatch
         QuickChatNetData.Serialize(data, messageWriter);
         messageWriter.Write(ChatChannelManager.Instance.CurrentChannelIndex);
         messageWriter.EndMessage();
-        return true;
+        return false;
     }
     
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.HandleRpc)), HarmonyPrefix]
