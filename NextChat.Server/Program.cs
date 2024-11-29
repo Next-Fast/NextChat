@@ -1,10 +1,6 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-
 namespace NextChat.Server;
 
-public class Program
+public static class Program
 {
     public static async Task Main(string[] args)
     {

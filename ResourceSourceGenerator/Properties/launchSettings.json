@@ -3,7 +3,7 @@
   "profiles": {
     "ResourceSourceGenerator": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../Next_Chat/Next_Chat.csproj"
+      "targetProject": "../NextChat/NextChat.csproj"
     }
   }
 }

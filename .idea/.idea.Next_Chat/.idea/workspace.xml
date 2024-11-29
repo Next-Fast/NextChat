@@ -4,8 +4,78 @@
     <projectFile profileName="http">Next_Chat.Server/Next_Chat.Server.csproj</projectFile>
     <projectFile profileName="ResourceSourceGenerator">ResourceSourceGenerator/ResourceSourceGenerator.csproj</projectFile>
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="c05907d4-09f0-4523-be95-abd708bb14b4" name="更改" comment="" />
+    <list default="true" id="c05907d4-09f0-4523-be95-abd708bb14b4" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Next_Chat/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Next_Chat/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NextChat.Server/Next_Chat.Server.http" beforeDir="false" afterPath="$PROJECT_DIR$/NextChat.Server/Next_Chat.Server.http" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NextChat.Server/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NextChat.Server/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NextChat.sln" beforeDir="false" afterPath="$PROJECT_DIR$/NextChat.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/ChatChannelManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ActiveManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ChatChannel.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ConnectionMode.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/Extension.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/IActive.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/INetworkEndpoint.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/INextPlayer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/IOnUpdate.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/IOptionCreator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/IRpcInfo.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/InstanceClass.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/LogHelper.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/NextAudioData.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/PlayerIconInstance.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/PlayerStates.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/PlayerVCInstance.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/PlayersOverlay.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/RPCFlag.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ResourceLib.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ResourceSprite.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/UnityHelper.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/VCFrame.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/VoiceConfig.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/WaveTool.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Core/ZOrderedSortingGroup.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Default/DefaultOptionCreator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Default/DefaultPlayer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Default/LocalPlayer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Default/RPCNetworkEndpoint.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Default/ServerNetworkEndpoint.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/GloalUsing.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Main.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/NextVoiceManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Next_Chat.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/ChatChannelPatch.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/InputKeyBindUpdate.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/OptionPatch.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/PlayerPatch.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/RPCPatch.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Patches/VoicePatch.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/LibConfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.Asio.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.Core.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.Midi.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.Wasapi.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.WinMM.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/NAudio.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/OpusDotNet.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/WebRtcVad.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/WebRtcVadSharp.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Lib/opus.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/All.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/Impostor.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/Jackal.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/Lover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/MeetingVCFrame.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/MicOff.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/MicOn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/OverlayIcon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Next_Chat/Resource/Sprites/SpriteInfos.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ResourceSourceGenerator/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/ResourceSourceGenerator/Properties/launchSettings.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,6 +96,10 @@
     &quot;accountId&quot;: &quot;a65ca251-d5d2-4d5e-8843-4f280c00502f&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/NextChat/Core/ActiveManager.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -36,15 +110,21 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;.NET 启动设置配置文件.ResourceSourceGenerator.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager" selected=".NET 启动设置配置文件.Next_Chat.Server: http">
+  <component name="RunManager" selected=".NET 启动设置配置文件.ResourceSourceGenerator">
     <configuration name="Next_Chat.Server: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/NextChat.Server/NextChat.Server.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value="net9.0" />
@@ -98,14 +178,30 @@
       <option name="presentableId" value="Default" />
       <updated>1732917046740</updated>
       <workItem from="1732917049097" duration="76000" />
+      <workItem from="1732917146855" duration="964000" />
     </task>
+    <task id="LOCAL-00001" summary="重命名项目名,更新依赖">
+      <option name="closed" value="true" />
+      <created>1732917448431</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1732917448431</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="UnityProjectDiscoverer">
+    <option name="hasUnityReference" value="true" />
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="重命名项目名,更新依赖" />
+    <option name="LAST_COMMIT_MESSAGE" value="重命名项目名,更新依赖" />
   </component>
 </project>
