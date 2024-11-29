@@ -122,7 +122,7 @@ public class ResourceGenerator : IIncrementalGenerator
             {
                 Usings =
                 {
-                    new CSharpUsing("Next_Chat.Core")
+                    new CSharpUsing("NextChat.Core")
                 },
                 Members = { sourceClass } 
             }.ToString();
@@ -159,7 +159,7 @@ public class ResourceGenerator : IIncrementalGenerator
             {
                 Usings =
                 {
-                    new CSharpUsing("Next_Chat.Core")
+                    new CSharpUsing("NextChat.Core")
                 },
                 Members = { sourceClass } 
             }.ToString();
