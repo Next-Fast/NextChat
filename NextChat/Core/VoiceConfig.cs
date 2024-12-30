@@ -34,6 +34,7 @@ public class VoiceConfig : IRpcInfo
         RPCPatch.rpcHandlers.Add(RPCFlag.SyncConfig, reader =>
         {
             var player = NextVoiceManager.Instance.GetPlayer(reader.ReadByte());
+            if (player == null) return;
             if (player is LocalPlayer)
             {
                 var config = new VoiceConfig();

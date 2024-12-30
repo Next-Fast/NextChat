@@ -1,3 +1,4 @@
+using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using Il2CppInterop.Runtime.Injection;
 using NAudio.Wave;
@@ -57,11 +58,18 @@ public static class Extension
 
     }
 
-    public static T AddComponent<T>(this BasePlugin plugin) where T : MonoBehaviour
+    public static T AddDontComponent<T>(this BasePlugin plugin) where T : MonoBehaviour
     {
         if (!ClassInjector.IsTypeRegisteredInIl2Cpp(typeof(T))) 
             ClassInjector.RegisterTypeInIl2Cpp<T>();
         return plugin.AddComponent<T>().Dont();
     }
-    
+
+    public const string Selection = "VoiceConfig";
+    public static ConfigFile Bind<T>(this ConfigFile file, string key, T defaultValue, out ConfigEntry<T> entry,
+        string description = "")
+    {
+        entry = file.Bind(Selection, key, defaultValue, description);
+        return file;
+    }
 }

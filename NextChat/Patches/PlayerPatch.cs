@@ -10,23 +10,32 @@ namespace NextChat.Patches;
 [Harmony]
 public class PlayerPatch
 {
-    public static PlayersOverlay? Overlay { get; set; }
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
+    /*[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
     private static void OnPlayerJoinedPatch(ClientData data)
     {
         NextVoiceManager.Instance.CreatePlayer(data.Character);
+    }*/
+
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Awake)), HarmonyPostfix]
+    private static void AwakePatch(PlayerControl __instance)
+    {
+        if (!PlayerControl.AllPlayerControls.Contains(__instance))
+            return;
+        
+        NextVoiceManager.Instance.CreatePlayer(__instance);
     }
 
-    [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update)), HarmonyPostfix]
-    private static void UpdatePatch()
+    public static bool HasHudManager;
+    [HarmonyPatch(typeof(HudManager), nameof(HudManager.Start)), HarmonyPostfix]
+    private static void StartPatch(HudManager __instance)
     {
-        Overlay ??= new PlayersOverlay(n => NextVoiceManager.Instance.GetPlayer(n.player!.PlayerId).IsSpeaking);
+        HasHudManager = true;
     }
     
     [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
     private static void OnPlayerCreate(ClientData data)
     {
-        RPCFlag.HasInstall.SendRpcToAll(SendOption.None, writer => writer.Write(LocalPlayer.Instance!.player.PlayerId) );
+        RPCFlag.HasInstall.SendRpcToAll(SendOption.None, writer => writer.Write(LocalPlayer.Instance!.player.PlayerId));
     }
 
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.OnDestroy)), HarmonyPrefix]
@@ -36,21 +45,25 @@ public class PlayerPatch
         {
             p.Dispose();
         }
-        
-        var icon = PlayersOverlay.Instance?._AllInstance.FirstOrDefault(n => n.player == __instance);
-        if (icon is null) return;
-        icon.player = null;
+
+        if (PlayersOverlay.Instance == null)
+            return;
+        var icon = PlayersOverlay.Instance._AllInstance.FirstOrDefault(n => n.id == __instance.PlayerId);
+        if (icon == null) return;
+        PlayersOverlay.Instance._AllInstance.Remove(icon);
+        icon.Destroy();
     }
     
     [HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.SetTargetPlayerId)), HarmonyPostfix]
-    private static void MeetingVCFramePatch(PlayerVoteArea __instance)
+    private static void MeetingVcFramePatch(PlayerVoteArea __instance)
     {
         var player = NextVoiceManager.Instance.GetPlayer(__instance.TargetPlayerId);
+        if (player == null) return;
         try
         {
-            player.Frame = !__instance.TryGetComponent(out VCFrame _frame) 
+            player.Frame = !__instance.TryGetComponent(out VcFrame _frame) 
                 ? _frame 
-                : UnityHelper.CreateObject<VCFrame>("VCFrame", __instance.transform, new Vector3(0, 0, -0.5f));
+                : UnityHelper.CreateObject<VcFrame>("VCFrame", __instance.transform, new Vector3(0, 0, -0.5f));
 
 
             var frame = player.Frame;
@@ -69,10 +82,10 @@ public class PlayerPatch
     }
 
     [HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.OnDestroy)), HarmonyPrefix]
-    private static void MeetingVCFrameDestroyPatch(PlayerVoteArea __instance)
+    private static void MeetingVcFrameDestroyPatch(PlayerVoteArea __instance)
     {
         var player = NextVoiceManager.Instance.GetPlayer(__instance.TargetPlayerId);
-        if (player.Frame is null) return;
+        if (player?.Frame is null) return;
         player.Frame.Destroy();
         player.Frame = null;
     }

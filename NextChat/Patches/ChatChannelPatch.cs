@@ -49,7 +49,6 @@ internal static class ChatChannelPatch
             UpdateChannelButton();
         });
         UpdateChannelButton();
-
     }
     
     

@@ -5,8 +5,8 @@ namespace NextChat.Core;
 
 public class NextAudioData : IRpcInfo
 {
-    public int dataId { get; set; }
-    public INextPlayer Player { get; set; } = null!;
+    public int DataId { get; set; }
+    public INextPlayer? Player { get; set; } 
 
     public int Length { get; set; }
     private byte[] DataBytes { get; set; } = [];
@@ -31,7 +31,8 @@ public class NextAudioData : IRpcInfo
 
     public void RpcWrite(MessageWriter writer)
     {
-        writer.Write(dataId);
+        if (Player == null) return;
+        writer.Write(DataId);
         writer.Write(Player.player.PlayerId);
         writer.Write(Length);
         writer.Write(DataBytes);
@@ -39,7 +40,7 @@ public class NextAudioData : IRpcInfo
 
     public void RpcRead(MessageReader reader)
     {
-        dataId = reader.ReadInt32();
+        DataId = reader.ReadInt32();
         Player = NextVoiceManager.Instance.GetPlayer(reader.ReadByte());
         Length = reader.ReadInt32();
         DataBytes = reader.ReadBytes(Length);

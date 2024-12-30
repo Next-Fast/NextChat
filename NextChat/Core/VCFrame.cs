@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace NextChat.Core;
 
-public class VCFrame : MonoBehaviour
+public class VcFrame : MonoBehaviour
 {
     public SpriteRenderer? Renderer;
     public INextPlayer? Player;

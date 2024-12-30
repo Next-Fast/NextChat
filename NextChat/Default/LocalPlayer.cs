@@ -74,7 +74,7 @@ public class LocalPlayer(PlayerControl player) : DefaultPlayer(player)
         {
             var data = NextVoiceManager.Instance.GenerateAudioData(e.Buffer);
             if (data == null) return;
-            LogInfo($"GenerateAudioData: {data.dataId} : {e.BytesRecorded} : {data.Length}");
+            LogInfo($"GenerateAudioData: {data.DataId} : {e.BytesRecorded} : {data.Length}");
             NextVoiceManager.Instance.Endpoint?.Send(data);
         }
     }

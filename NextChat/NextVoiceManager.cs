@@ -77,7 +77,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         return new NextAudioData
         {
             Player = LocalPlayer.Instance!,
-            dataId = LastId,
+            DataId = LastId,
         }.AddFormInfo(new EncodeInfo(_Config.BuffedLength, _WaveTool.Encoder, data));
     }
 
@@ -108,7 +108,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         MixingProvider = _Config.BuildMixingSampleProvider();
         foreach (var player in Players)
         {
-            ((DefaultPlayer)player).AddProvider(_Config, MixingProvider);
+            (player as DefaultPlayer)?.AddProvider(_Config, MixingProvider);
         }
 
         CurrentOutput = _WaveTool.WasapiWaveOut;
@@ -116,7 +116,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     }
     
     public bool State => CurrentOutput?.PlaybackState == PlaybackState.Playing;
-    public DefaultPlayer GetPlayer(byte id) => (DefaultPlayer)Players.First(n => n.player.PlayerId == id);
+    public DefaultPlayer? GetPlayer(byte id) => Players.FirstOrDefault(n => n.player.PlayerId == id) as DefaultPlayer;
     
 
     private bool waveInState;
@@ -259,14 +259,17 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
     public INextPlayer CreatePlayer(PlayerControl player)
     {
         Players.FirstOrDefault(n => n.player == player)?.Dispose();
-        var NewPlayer = player == PlayerControl.LocalPlayer ? new LocalPlayer(player) { Config = _Config } : new DefaultPlayer(player);
+        var newPlayer = player == PlayerControl.LocalPlayer ? 
+            new LocalPlayer(player) { Config = _Config } 
+            : 
+            new DefaultPlayer(player) { Config = _Config };
         
         if (MixingProvider != null && _Config != null)
-            NewPlayer.AddProvider(_Config, MixingProvider);
+            newPlayer.AddProvider(_Config, MixingProvider);
         
-        NewPlayer.Create();
-        Players.Add(NewPlayer);
-        return NewPlayer;
+        Players.Add(newPlayer);
+        LogInfo($"Add NewPlayer {player.PlayerId} {player.Data.PlayerName}");
+        return newPlayer;
     }
 
     public void ChangeEndpoint(ConnectionMode connectionMode)
@@ -278,7 +281,7 @@ public class NextVoiceManager : InstanceClass<NextVoiceManager>
         Endpoint = connectionMode switch
         {
             ConnectionMode.Rpc => new RPCNetworkEndpoint(),
-            ConnectionMode.Server => new ServerNetworkEndpoint(),
+            ConnectionMode.Server => throw new NotImplementedException("No Server Endpoint"),
             _ => new RPCNetworkEndpoint()
         };
         

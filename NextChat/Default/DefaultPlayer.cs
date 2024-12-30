@@ -37,7 +37,7 @@ public class DefaultPlayer(PlayerControl player) : PlayerVCInstance, INextPlayer
     {
         if (NextVoiceManager.Instance._WaveTool == null || NextVoiceManager.Instance._WaveTool.Decoder == null) return;
         
-        if (AllKeepData.Count != 0 && AllKeepData[0].dataId == LastDataId + 1)
+        if (AllKeepData.Count != 0 && AllKeepData[0].DataId == LastDataId + 1)
             PushData(AllKeepData[0]);
         
         if (_allData.Count == 0)
@@ -66,14 +66,14 @@ public class DefaultPlayer(PlayerControl player) : PlayerVCInstance, INextPlayer
         var info = NextVoiceManager.Instance.GetDecodeInfo(data);
         if (info == null) return;
         BufferedProvider?.AddSamples(info.Data, 0, info.buffedLength);
-        LogInfo($"AddData dataId:{data.dataId} length:{info.buffedLength}");
+        LogInfo($"AddData dataId:{data.DataId} length:{info.buffedLength}");
     }
 
     public void AddData(NextAudioData data)
     {
-        if (_allData.Exists(n => n.dataId == data.dataId)) return;
+        if (_allData.Exists(n => n.DataId == data.DataId)) return;
 
-        if (data.dataId > LastDataId + 1 && data.dataId < LastDataId + 10)
+        if (data.DataId > LastDataId + 1 && data.DataId < LastDataId + 10)
             KeepData(data);
         else
             PushData(data);
@@ -81,16 +81,16 @@ public class DefaultPlayer(PlayerControl player) : PlayerVCInstance, INextPlayer
 
     public void PushData(NextAudioData data)
     {
-        AllKeepData.RemoveAll(n => n.dataId == data.dataId);
+        AllKeepData.RemoveAll(n => n.DataId == data.DataId);
         _allData.Add(data);
-        LastDataId = data.dataId;
-        LogInfo($"push data {data.dataId}");
+        LastDataId = data.DataId;
+        LogInfo($"push data {data.DataId}");
     }
 
     public void KeepData(NextAudioData data)
     {
         AllKeepData.Add(data);
-        AllKeepData.Sort((x, y) => x.dataId.CompareTo(y.dataId));
+        AllKeepData.Sort((x, y) => x.DataId.CompareTo(y.DataId));
     }
 
     public virtual void Dispose()
@@ -111,9 +111,8 @@ public class DefaultPlayer(PlayerControl player) : PlayerVCInstance, INextPlayer
         RPCPatch.rpcHandlers.Add(RPCFlag.HasInstall, reader =>
         {
             var player = NextVoiceManager.Instance.GetPlayer(reader.ReadByte());
+            if (player == null) return;
             player.HasInstall = true;
         });
     }
-
-    protected override INextPlayer _player => this;
 }

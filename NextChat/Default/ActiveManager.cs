@@ -1,4 +1,6 @@
-namespace NextChat.Core;
+using NextChat.Core;
+
+namespace NextChat.Default;
 
 public class ActiveManager : InstanceClass<ActiveManager>
 {

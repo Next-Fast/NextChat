@@ -1,16 +1,16 @@
-using System.Diagnostics.CodeAnalysis;
-using NextChat.Core;
 using UnityEngine;
 
 namespace NextChat.Patches;
 
-[SuppressMessage("Performance", "CA1822:将成员标记为 static")]
+
 public sealed class InputKeyBindUpdate : MonoBehaviour
 {
     public record KeyBind(string name, Action OnInput, params KeyCode[] KeyCodes)
     {
         public bool IsPressed() => KeyCodes.All(Input.GetKeyDown);
     }
+    
+    public static InputKeyBindUpdate? Instance { get; set; }
 
     private static readonly List<KeyBind> AllBind = [];
 
@@ -34,14 +34,12 @@ public sealed class InputKeyBindUpdate : MonoBehaviour
     }
     
     
-    
-    public void FixedUpdate()
+    public void LateUpdate()
     {
         foreach (var player in NextVoiceManager.Instance.Players)
         {
             player.OnUpdate();
         }
-        PlayersOverlay.Instance?.OnUpdate();
     }
 }
 

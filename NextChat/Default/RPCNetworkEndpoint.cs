@@ -17,7 +17,8 @@ internal class RPCNetworkEndpoint : INetworkEndpoint
         {
             var audio = new NextAudioData();
             audio.RpcRead(reader);
-            LogInfo($"receive AudioDar Id:{audio.dataId} Length:{audio.Length} sender:{audio.Player.player.name}");
+            if (audio.Player == null) return;
+            LogInfo($"receive AudioDar Id:{audio.DataId} Length:{audio.Length} sender:{audio.Player.player.name}");
             audio.Player.AddData(audio);
         });
         
@@ -28,7 +29,7 @@ internal class RPCNetworkEndpoint : INetworkEndpoint
     {
         if (!Starting) return; 
         RPCFlag.Send.SendRpcToAll(SendOption.None, data.RpcWrite);
-        LogInfo($"send AudioDar Id:{data.dataId} Length:{data.Length}");
+        LogInfo($"send AudioDar Id:{data.DataId} Length:{data.Length}");
     }
 
 

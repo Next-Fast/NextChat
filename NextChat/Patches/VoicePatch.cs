@@ -1,6 +1,4 @@
 using HarmonyLib;
-using Hazel;
-using InnerNet;
 using NextChat.Core;
 using NextChat.Default;
 using TMPro;
@@ -25,10 +23,10 @@ public class VoicePatch
     private static void VoiceButtonPatch(HudManager __instance)
     {
         if (MicButton) return;
-        var Button = __instance.KillButton;
-        if (!Button) return;
+        var button = __instance.KillButton;
+        if (!button) return;
         
-        MicButton = Object.Instantiate(Button.gameObject, Button.transform.parent);
+        MicButton = Object.Instantiate(button.gameObject, button.transform.parent);
         MicButton.name = "MicButton";
         MicButtonSpriteRenderer = MicButton.GetComponent<SpriteRenderer>();
         MicButton.GetComponent<KillButton>().Destroy();
@@ -56,7 +54,7 @@ public class VoicePatch
     
     
 
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
+    /*[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined)), HarmonyPostfix]
     private static void OnPlayerJoinedPatch(AmongUsClient __instance, ClientData data)
     {
         if (LocalPlayer.Instance == null) return;
@@ -76,5 +74,5 @@ public class VoicePatch
             write.Write(LocalPlayer.Instance.player.PlayerId);
             NextVoiceManager.Instance._Config!.RpcWrite(write);
         });
-    }
+    }*/
 }

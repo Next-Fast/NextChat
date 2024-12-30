@@ -22,7 +22,7 @@ namespace NextChat;
 [UsedImplicitly]
 public sealed partial class Main : BasePlugin
 {
-    public static readonly Harmony _Harmony = new(Id);
+    public static readonly Harmony Harmony = new(Id);
     public static ManualLogSource LogSource { get; private set; } = null!;
     public static ConfigFile ConfigFile { get; private set; } = null!;
     
@@ -44,18 +44,18 @@ public sealed partial class Main : BasePlugin
         
         SetModStamp();
         SetWrite();
-        RegisterIL2cpp();
+        RegisterIL2CPP();
         SetKeyBind();
 
-        _Harmony.PatchAll();
+        Harmony.PatchAll();
     }
 
-    private void RegisterIL2cpp()
+    private void RegisterIL2CPP()
     {
-        ClassInjector.RegisterTypeInIl2Cpp<InputKeyBindUpdate>();
-        ClassInjector.RegisterTypeInIl2Cpp<ZOrderedSortingGroup>();
         ClassInjector.RegisterTypeInIl2Cpp<PlayerIconInstance>();
-        ClassInjector.RegisterTypeInIl2Cpp<VCFrame>();
+        ClassInjector.RegisterTypeInIl2Cpp<VcFrame>();
+
+        this.AddDontComponent<OverlyManager>();
     }
 
     private static void SetModStamp()
@@ -69,7 +69,7 @@ public sealed partial class Main : BasePlugin
 
     private void SetKeyBind()
     {
-        Extension.AddComponent<InputKeyBindUpdate>(this);
+        this.AddDontComponent<InputKeyBindUpdate>();
         InputKeyBindUpdate.Register("VoiceMute", () =>
         {
             LocalPlayer.Instance?.SetMicState();
@@ -105,10 +105,11 @@ public sealed partial class Main : BasePlugin
     public override bool Unload()
     {
         AppDomain.CurrentDomain.AssemblyResolve -= AssemblyResolve;
+        Harmony.UnpatchSelf();
         return base.Unload();
     }
 
-    public static string LibDir = Paths.PluginPath;
+    private static string LibDir = Paths.PluginPath;
     private static Assembly? AssemblyResolve(object? sender, ResolveEventArgs args)
     {
         var name = new AssemblyName(args.Name);
