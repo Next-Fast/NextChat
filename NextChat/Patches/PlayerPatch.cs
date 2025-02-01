@@ -46,15 +46,15 @@ public class PlayerPatch
             p.Dispose();
         }
 
-        if (PlayersOverlay.Instance == null)
+        /*if (PlayersOverlay.Instance == null)
             return;
         var icon = PlayersOverlay.Instance._AllInstance.FirstOrDefault(n => n.id == __instance.PlayerId);
         if (icon == null) return;
         PlayersOverlay.Instance._AllInstance.Remove(icon);
-        icon.Destroy();
+        icon.Destroy();*/
     }
     
-    [HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.SetTargetPlayerId)), HarmonyPostfix]
+    /*[HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.SetTargetPlayerId)), HarmonyPostfix]
     private static void MeetingVcFramePatch(PlayerVoteArea __instance)
     {
         var player = NextVoiceManager.Instance.GetPlayer(__instance.TargetPlayerId);
@@ -79,14 +79,14 @@ public class PlayerPatch
         {
             LogWarning($"Create VCFrame failed Id:{__instance.TargetPlayerId}");
         }
-    }
+    }*/
 
-    [HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.OnDestroy)), HarmonyPrefix]
+    /*[HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.OnDestroy)), HarmonyPrefix]
     private static void MeetingVcFrameDestroyPatch(PlayerVoteArea __instance)
     {
         var player = NextVoiceManager.Instance.GetPlayer(__instance.TargetPlayerId);
         if (player?.Frame is null) return;
         player.Frame.Destroy();
         player.Frame = null;
-    }
+    }*/
 }

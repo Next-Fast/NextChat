@@ -44,7 +44,7 @@ public sealed partial class Main : BasePlugin
         
         SetModStamp();
         SetWrite();
-        RegisterIL2CPP();
+        /*RegisterIL2CPP();*/
         SetKeyBind();
 
         Harmony.PatchAll();
